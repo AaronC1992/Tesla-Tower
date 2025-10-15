@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>⚡ Tesla Tower</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header -->
+        <div class="game-header">
+            <h1>⚡ Tesla Tower</h1>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-label">Wave:</span>
+                    <span class="stat-value" id="wave">1</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Kills:</span>
+                    <span class="stat-value" id="kills">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Gold:</span>
+                    <span class="stat-value" id="gold">100</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Tower HP:</span>
+                    <span class="stat-value" id="towerHealth">100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Sound Toggle Button (top left) -->
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+
+        <!-- Main Menu (shown on start) -->
+        <div class="main-menu active" id="mainMenu">
+            <div class="menu-content">
+                <h1 class="menu-title">⚡ TESLA TOWER</h1>
+                <p class="menu-subtitle">Defend your tower from endless zombie waves!</p>
+                <div class="menu-instructions">
+                    <h3>How to Play:</h3>
+                    <p>Zombies spawn from all directions</p>
+                    <p>Your tower auto-attacks with lightning</p>
+                    <p>Earn gold by killing zombies</p>
+                    <p>Click/tap to shoot lightning bolts</p>
+                    <p>Upgrade your tower to survive longer</p>
+                </div>
+                <button class="start-btn" id="startBtn">
+                    START GAME
+                </button>
+                <div class="menu-buttons">
+                    <button class="menu-btn" id="saveGameBtn">SAVE GAME</button>
+                    <button class="menu-btn" id="loadGameBtn">LOAD GAME</button>
+                    <button class="menu-btn" id="permUpgradesBtn">PERMANENT UPGRADES</button>
+                    <button class="menu-btn" id="statsBtn">STATISTICS</button>
+                    <button class="menu-btn" id="achievementsBtn">ACHIEVEMENTS</button>
+                    <button class="menu-btn" id="enemyTypesBtn">ENEMY TYPES</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upgrade Button (top right) -->
+        <button class="upgrade-btn" id="upgradeBtn">
+            UPGRADE
+        </button>
+
+        <!-- Upgrade Panel (hidden by default) -->
+        <div class="panel-backdrop" id="upgradeBackdrop"></div>
+        <div class="upgrade-panel" id="upgradePanel">
+            <h2>⚡ Upgrade Tesla Tower</h2>
+            <div class="upgrade-close" id="closeUpgrade">✕</div>
+            
+            <div class="current-gold">
+                💰 Gold: <span id="currentGold">100</span>
+            </div>
+            
+            <div class="tower-stats">
+                <div class="tower-stat">
+                    <span>Level:</span>
+                    <span id="towerLevel">1</span>
+                </div>
+                <div class="tower-stat">
+                    <span>Damage:</span>
+                    <span id="towerDamage">10</span>
+                </div>
+                <div class="tower-stat">
+                    <span>Range:</span>
+                    <span id="towerRange">150</span>
+                </div>
+                <div class="tower-stat">
+                    <span>Fire Rate:</span>
+                    <span id="towerFireRate">1.0s</span>
+                </div>
+                <div class="tower-stat">
+                    <span>Max Targets:</span>
+                    <span id="towerTargets">1</span>
+                </div>
+                <div class="tower-stat">
+                    <span>Click Damage:</span>
+                    <span id="towerClickDamage">1</span>
+                </div>
+                <div class="tower-stat">
+                    <span>Chain Lightning:</span>
+                    <span id="towerChainLightning">0</span>
+                </div>
+                <div class="tower-stat">
+                    <span>Shield:</span>
+                    <span id="towerShield">0/0</span>
+                </div>
+            </div>
+
+            <div class="upgrade-options">
+                <button class="upgrade-option" id="upgradeDamage">
+                    <div class="upgrade-icon">💥</div>
+                    <div class="upgrade-name">Increase Damage</div>
+                    <div class="upgrade-desc">+5 damage per hit</div>
+                    <div class="upgrade-cost">Cost: <span id="damageCost">50</span> gold</div>
+                </button>
+
+                <button class="upgrade-option" id="upgradeRange">
+                    <div class="upgrade-icon">📡</div>
+                    <div class="upgrade-name">Increase Range</div>
+                    <div class="upgrade-desc">+30 range</div>
+                    <div class="upgrade-cost">Cost: <span id="rangeCost">40</span> gold</div>
+                </button>
+
+                <button class="upgrade-option" id="upgradeFireRate">
+                    <div class="upgrade-icon">⚡</div>
+                    <div class="upgrade-name">Faster Fire Rate</div>
+                    <div class="upgrade-desc">-0.1s attack speed</div>
+                    <div class="upgrade-cost">Cost: <span id="fireRateCost">60</span> gold</div>
+                </button>
+
+                <button class="upgrade-option" id="upgradeHealth">
+                    <div class="upgrade-icon">❤️</div>
+                    <div class="upgrade-name">Repair Tower</div>
+                    <div class="upgrade-desc">Restore 50 HP</div>
+                    <div class="upgrade-cost">Cost: <span id="healthCost">30</span> gold</div>
+                </button>
+
+                <button class="upgrade-option" id="upgradeTargets">
+                    <div class="upgrade-icon">🎯</div>
+                    <div class="upgrade-name">Multi-Target</div>
+                    <div class="upgrade-desc">+1 simultaneous target</div>
+                    <div class="upgrade-cost">Cost: <span id="targetsCost">75</span> gold</div>
+                </button>
+
+                <button class="upgrade-option" id="upgradeClickDamage">
+                    <div class="upgrade-icon">👆</div>
+                    <div class="upgrade-name">Click Power</div>
+                    <div class="upgrade-desc">+2 click/tap damage</div>
+                    <div class="upgrade-cost">Cost: <span id="clickDamageCost">40</span> gold</div>
+                </button>
+
+                <button class="upgrade-option" id="upgradeChainLightning">
+                    <div class="upgrade-icon">⚡🔗</div>
+                    <div class="upgrade-name">Chain Lightning (<span id="currentChainJumps">0</span>)</div>
+                    <div class="upgrade-desc">+1 lightning jump</div>
+                    <div class="upgrade-cost">Cost: <span id="chainLightningCost">100</span> gold</div>
+                </button>
+
+                <button class="upgrade-option" id="upgradeShield">
+                    <div class="upgrade-icon">🛡️</div>
+                    <div class="upgrade-name">Shield Generator (<span id="currentShield">0</span>)</div>
+                    <div class="upgrade-desc">+5 max shield & recharge</div>
+                    <div class="upgrade-cost">Cost: <span id="shieldCost">80</span> gold</div>
+                </button>
+            </div>
+
+            <div class="save-load-buttons">
+                <button class="save-load-btn" id="saveGameUpgradeBtn">💾 SAVE</button>
+                <button class="save-load-btn" id="loadGameUpgradeBtn">📂 LOAD</button>
+                <button class="save-load-btn" id="enemyTypesUpgradeBtn">🧟 ENEMIES</button>
+            </div>
+            
+            <button class="resume-btn" id="resumeBtn">▶ RESUME GAME</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="game-over" id="gameOver">
+            <h1>💀 TOWER DESTROYED 💀</h1>
+            <div class="final-stats">
+                <p>Wave Reached: <span id="finalWave">0</span></p>
+                <p>Zombies Killed: <span id="finalKills">0</span></p>
+            </div>
+            <button class="restart-btn" id="restartBtn">🔄 TRY AGAIN</button>
+        </div>
+
+        <!-- Permanent Upgrades Panel -->
+        <div class="panel-backdrop" id="permUpgradesBackdrop"></div>
+        <div class="perm-upgrades-panel" id="permUpgradesPanel">
+            <h2>⭐ PERMANENT UPGRADES</h2>
+            <div class="upgrade-close" id="closePermUpgrades">✕</div>
+            
+            <div class="perm-stats">
+                <p>💀 Total Kills (All Runs): <span id="totalKills">0</span></p>
+                <p class="perm-info">Spend kills on permanent bonuses that apply to every new game!</p>
+            </div>
+            
+            <div class="perm-current-bonuses">
+                <h3>Current Bonuses:</h3>
+                <p>⚔️ Damage: <span id="permBonusDamage">+0</span></p>
+                <p>❤️ Health: <span id="permBonusHealth">+0</span></p>
+                <p>👆 Click Damage: <span id="permBonusClick">+0</span></p>
+                <p>💰 Starting Gold: <span id="permBonusGold">+0</span></p>
+            </div>
+            
+            <div class="perm-upgrade-options">
+                <button class="perm-upgrade-option" id="buyPermDamage">
+                    <div class="upgrade-icon">⚔️</div>
+                    <div class="upgrade-name">Bonus Damage</div>
+                    <div class="upgrade-desc">+2 tower damage (permanent)</div>
+                    <div class="upgrade-cost">Cost: <span id="permDamageCost">50</span> kills</div>
+                </button>
+
+                <button class="perm-upgrade-option" id="buyPermHealth">
+                    <div class="upgrade-icon">❤️</div>
+                    <div class="upgrade-name">Bonus Health</div>
+                    <div class="upgrade-desc">+20 max health (permanent)</div>
+                    <div class="upgrade-cost">Cost: <span id="permHealthCost">100</span> kills</div>
+                </button>
+
+                <button class="perm-upgrade-option" id="buyPermClick">
+                    <div class="upgrade-icon">👆</div>
+                    <div class="upgrade-name">Bonus Click Power</div>
+                    <div class="upgrade-desc">+1 click damage (permanent)</div>
+                    <div class="upgrade-cost">Cost: <span id="permClickCost">75</span> kills</div>
+                </button>
+
+                <button class="perm-upgrade-option" id="buyPermGold">
+                    <div class="upgrade-icon">💰</div>
+                    <div class="upgrade-name">Bonus Starting Gold</div>
+                    <div class="upgrade-desc">+50 gold at start (permanent)</div>
+                    <div class="upgrade-cost">Cost: <span id="permGoldCost">150</span> kills</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Panel -->
+        <div class="panel-backdrop" id="statsBackdrop"></div>
+        <div class="stats-panel" id="statsPanel">
+            <h2>📊 PLAYER STATISTICS</h2>
+            <div class="upgrade-close" id="closeStats">✕</div>
+            
+            <div class="stats-container">
+                <div class="stats-section">
+                    <h3>🎮 Overall Stats</h3>
+                    <div class="stat-row">
+                        <span class="stat-label">💀 Total Kills:</span>
+                        <span class="stat-value" id="statTotalKills">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">⚔️ Total Damage Dealt:</span>
+                        <span class="stat-value" id="statTotalDamage">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">👆 Total Clicks:</span>
+                        <span class="stat-value" id="statTotalClicks">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">🌊 Highest Wave:</span>
+                        <span class="stat-value" id="statHighestWave">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">🎲 Total Games Played:</span>
+                        <span class="stat-value" id="statTotalGames">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">💰 Total Gold Earned:</span>
+                        <span class="stat-value" id="statTotalGold">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">👑 Bosses Killed:</span>
+                        <span class="stat-value" id="statBossesKilled">0</span>
+                    </div>
+                </div>
+                
+                <div class="stats-section">
+                    <h3>📈 Averages Per Game</h3>
+                    <div class="stat-row">
+                        <span class="stat-label">💀 Avg Kills:</span>
+                        <span class="stat-value" id="statAvgKills">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">⚔️ Avg Damage:</span>
+                        <span class="stat-value" id="statAvgDamage">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">🌊 Avg Wave:</span>
+                        <span class="stat-value" id="statAvgWave">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievements Panel -->
+    <div class="panel-backdrop" id="achievementsBackdrop"></div>
+    <div class="panel" id="achievementsPanel">
+        <div class="panel-content">
+            <button class="close-btn" id="closeAchievements">✖</button>
+            <h2 style="text-align: center; margin-bottom: 5px;">🏆 ACHIEVEMENTS 🏆</h2>
+            <p style="text-align: center; color: #ffd700; margin-bottom: 20px;" id="achievementsCount">0 / 0 Unlocked</p>
+            <div id="achievementsList" class="achievements-list"></div>
+        </div>
+    </div>
+
+    <!-- Save Slot Panel -->
+    <div class="panel-backdrop" id="saveSlotBackdrop"></div>
+    <div class="panel" id="saveSlotPanel">
+        <div class="panel-content">
+            <button class="close-btn" id="closeSaveSlots">✖</button>
+            <h2 style="text-align: center; margin-bottom: 20px;">💾 SAVE SLOTS</h2>
+            
+            <div class="save-slots-container">
+                <!-- Slot 1 -->
+                <div class="save-slot" id="slot1">
+                    <div class="slot-header">
+                        <h3>📁 Slot 1</h3>
+                    </div>
+                    <div class="slot-info" id="slotInfo1">
+                        <span style="color: #888;">Empty Slot</span>
+                    </div>
+                    <div class="slot-buttons">
+                        <button class="slot-btn save-btn" id="saveSlot1">💾 Save</button>
+                        <button class="slot-btn load-btn" id="loadSlot1">📂 Load</button>
+                        <button class="slot-btn delete-btn" id="deleteSlot1">🗑️ Delete</button>
+                    </div>
+                </div>
+                
+                <!-- Slot 2 -->
+                <div class="save-slot" id="slot2">
+                    <div class="slot-header">
+                        <h3>📁 Slot 2</h3>
+                    </div>
+                    <div class="slot-info" id="slotInfo2">
+                        <span style="color: #888;">Empty Slot</span>
+                    </div>
+                    <div class="slot-buttons">
+                        <button class="slot-btn save-btn" id="saveSlot2">💾 Save</button>
+                        <button class="slot-btn load-btn" id="loadSlot2">📂 Load</button>
+                        <button class="slot-btn delete-btn" id="deleteSlot2">🗑️ Delete</button>
+                    </div>
+                </div>
+                
+                <!-- Slot 3 -->
+                <div class="save-slot" id="slot3">
+                    <div class="slot-header">
+                        <h3>📁 Slot 3</h3>
+                    </div>
+                    <div class="slot-info" id="slotInfo3">
+                        <span style="color: #888;">Empty Slot</span>
+                    </div>
+                    <div class="slot-buttons">
+                        <button class="slot-btn save-btn" id="saveSlot3">💾 Save</button>
+                        <button class="slot-btn load-btn" id="loadSlot3">📂 Load</button>
+                        <button class="slot-btn delete-btn" id="deleteSlot3">🗑️ Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enemy Types Panel -->
+    <div class="panel-backdrop" id="enemyTypesBackdrop"></div>
+    <div class="panel" id="enemyTypesPanel">
+        <div class="panel-content">
+            <button class="close-btn" id="closeEnemyTypes">✖</button>
+            <h2 style="text-align: center; margin-bottom: 20px;">🧟 ENEMY TYPES</h2>
+            
+            <div class="enemy-types-container">
+                <!-- Normal Zombie -->
+                <div class="enemy-type-card">
+                    <div class="enemy-type-circle" style="background-color: #00ff00;"></div>
+                    <div class="enemy-type-info">
+                        <h3>Normal Zombie</h3>
+                        <p><strong>Unlocks:</strong> Wave 1</p>
+                        <p><strong>Speed:</strong> Medium</p>
+                        <p><strong>Health:</strong> Low</p>
+                        <p><strong>Damage:</strong> 1</p>
+                        <p class="enemy-desc">Basic zombie with balanced stats.</p>
+                        <p class="enemy-kills"><strong>💀 Kills:</strong> <span id="killsNormal">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Strong Zombie -->
+                <div class="enemy-type-card">
+                    <div class="enemy-type-circle" style="background-color: #ffaa00;"></div>
+                    <div class="enemy-type-info">
+                        <h3>Strong Zombie</h3>
+                        <p><strong>Unlocks:</strong> Wave 3</p>
+                        <p><strong>Speed:</strong> Slow</p>
+                        <p><strong>Health:</strong> High</p>
+                        <p><strong>Damage:</strong> 2</p>
+                        <p class="enemy-desc">Tougher zombie that takes more hits to kill.</p>
+                        <p class="enemy-kills"><strong>💀 Kills:</strong> <span id="killsStrong">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Runner Zombie -->
+                <div class="enemy-type-card">
+                    <div class="enemy-type-circle" style="background-color: #00ffff;"></div>
+                    <div class="enemy-type-info">
+                        <h3>Runner Zombie</h3>
+                        <p><strong>Unlocks:</strong> Wave 7</p>
+                        <p><strong>Speed:</strong> Very Fast</p>
+                        <p><strong>Health:</strong> Very Low</p>
+                        <p><strong>Damage:</strong> 1</p>
+                        <p class="enemy-desc">Fast zombie that rushes your tower.</p>
+                        <p class="enemy-kills"><strong>💀 Kills:</strong> <span id="killsRunner">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Tank Zombie -->
+                <div class="enemy-type-card">
+                    <div class="enemy-type-circle" style="background-color: #888888; box-shadow: 0 0 15px #888888;"></div>
+                    <div class="enemy-type-info">
+                        <h3>Tank Zombie</h3>
+                        <p><strong>Unlocks:</strong> Wave 10</p>
+                        <p><strong>Speed:</strong> Very Slow</p>
+                        <p><strong>Health:</strong> Very High</p>
+                        <p><strong>Damage:</strong> 3</p>
+                        <p class="enemy-desc">Heavily armored zombie with massive health.</p>
+                        <p class="enemy-kills"><strong>💀 Kills:</strong> <span id="killsTank">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Exploder Zombie -->
+                <div class="enemy-type-card">
+                    <div class="enemy-type-circle" style="background-color: #ff00ff; box-shadow: 0 0 15px #ff00ff;"></div>
+                    <div class="enemy-type-info">
+                        <h3>Exploder Zombie</h3>
+                        <p><strong>Unlocks:</strong> Wave 15</p>
+                        <p><strong>Speed:</strong> Medium</p>
+                        <p><strong>Health:</strong> Medium</p>
+                        <p><strong>Damage:</strong> 1 + Explosion</p>
+                        <p class="enemy-desc">⚠️ Explodes on death, dealing 5+ damage to your tower!</p>
+                        <p class="enemy-kills"><strong>💀 Kills:</strong> <span id="killsExploder">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Boss Zombie -->
+                <div class="enemy-type-card">
+                    <div class="enemy-type-circle" style="background-color: #ff0000; box-shadow: 0 0 20px #ff0000;"></div>
+                    <div class="enemy-type-info">
+                        <h3>Boss Zombie 👑</h3>
+                        <p><strong>Unlocks:</strong> Every 5th Wave</p>
+                        <p><strong>Speed:</strong> Slow</p>
+                        <p><strong>Health:</strong> Massive</p>
+                        <p><strong>Damage:</strong> 2</p>
+                        <p class="enemy-desc">Powerful boss with huge rewards!</p>
+                        <p class="enemy-kills"><strong>💀 Kills:</strong> <span id="killsBoss">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
