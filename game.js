@@ -58,7 +58,7 @@ class TowerDefenseGame {
         };
         
         // Click/Tap damage (with permanent bonus)
-        this.clickDamage = 1 + this.permStats.bonusClickDamage;
+        this.clickDamage = 5 + this.permStats.bonusClickDamage;
         this.isMouseDown = false;
         this.lastClickTime = 0;
         this.clickFireRate = 150; // Random strike spawn rate (150ms)
@@ -73,14 +73,14 @@ class TowerDefenseGame {
         
         // Upgrade costs
         this.upgradeCosts = {
-            damage: 50,
-            range: 40,
-            fireRate: 60,
-            health: 30,
-            targets: 75, // Cost for multi-target upgrade
-            clickDamage: 40, // Cost for click damage upgrade
-            chainLightning: 100, // Cost for chain lightning upgrade
-            shield: 80 // Cost for shield upgrade
+            damage: 100,
+            range: 80,
+            fireRate: 120,
+            health: 50,
+            targets: 150, // Cost for multi-target upgrade
+            clickDamage: 80, // Cost for click damage upgrade
+            chainLightning: 200, // Cost for chain lightning upgrade
+            shield: 150 // Cost for shield upgrade
         };
         
         // Game objects
@@ -1032,7 +1032,7 @@ class TowerDefenseGame {
         this.ctx.stroke();
         
         // Draw tower
-        const healthPercent = this.tower.health / this.tower.maxHealth;
+        const healthPercent = Math.min(1, Math.max(0, this.tower.health / this.tower.maxHealth));
         const gradient = this.ctx.createRadialGradient(
             this.tower.x, this.tower.y, 0,
             this.tower.x, this.tower.y, this.tower.radius
@@ -1059,21 +1059,31 @@ class TowerDefenseGame {
             this.ctx.lineWidth = 1;
         }
         
-        // Tower health bar
+        // Tower health bar (fixed width)
         const barWidth = 60;
         const barHeight = 8;
+        
+        // Background bar
         this.ctx.fillStyle = '#333';
         this.ctx.fillRect(this.tower.x - barWidth/2, this.tower.y - this.tower.radius - 15, barWidth, barHeight);
+        
+        // Health fill (clamped to prevent overflow)
+        const healthBarWidth = Math.min(barWidth, barWidth * healthPercent);
         this.ctx.fillStyle = healthPercent > 0.5 ? '#00ff00' : (healthPercent > 0.25 ? '#ffff00' : '#ff0000');
-        this.ctx.fillRect(this.tower.x - barWidth/2, this.tower.y - this.tower.radius - 15, barWidth * healthPercent, barHeight);
+        this.ctx.fillRect(this.tower.x - barWidth/2, this.tower.y - this.tower.radius - 15, healthBarWidth, barHeight);
         
         // Shield bar (if shield exists)
         if (this.tower.maxShield > 0) {
-            const shieldPercent = this.tower.shield / this.tower.maxShield;
+            const shieldPercent = Math.min(1, Math.max(0, this.tower.shield / this.tower.maxShield));
+            const shieldBarWidth = Math.min(barWidth, barWidth * shieldPercent);
+            
+            // Background
             this.ctx.fillStyle = '#222';
             this.ctx.fillRect(this.tower.x - barWidth/2, this.tower.y - this.tower.radius - 28, barWidth, barHeight);
+            
+            // Shield fill
             this.ctx.fillStyle = '#00ddff';
-            this.ctx.fillRect(this.tower.x - barWidth/2, this.tower.y - this.tower.radius - 28, barWidth * shieldPercent, barHeight);
+            this.ctx.fillRect(this.tower.x - barWidth/2, this.tower.y - this.tower.radius - 28, shieldBarWidth, barHeight);
         }
         
         // Draw lightning effects
@@ -1260,8 +1270,8 @@ class TowerDefenseGame {
         this.tower.chainLightning = 0;
         this.tower.shield = 0;
         this.tower.maxShield = 0;
-        this.clickDamage = 1 + this.permStats.bonusClickDamage;
-        this.upgradeCosts = { damage: 50, range: 40, fireRate: 60, health: 30, targets: 75, clickDamage: 40, chainLightning: 100, shield: 80 };
+        this.clickDamage = 5 + this.permStats.bonusClickDamage;
+        this.upgradeCosts = { damage: 100, range: 80, fireRate: 120, health: 50, targets: 150, clickDamage: 80, chainLightning: 200, shield: 150 };
         this.zombies = [];
         this.lightning = [];
         this.particles = [];
