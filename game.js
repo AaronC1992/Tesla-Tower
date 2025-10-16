@@ -324,7 +324,9 @@ class TowerDefenseGame {
         });
         
         document.getElementById('backToMenuBtn').addEventListener('click', () => {
-            this.backToMainMenu();
+            if (confirm('Are you sure you want to quit to the main menu? Your current progress will be lost unless you save first!')) {
+                this.backToMainMenu();
+            }
         });
         
         // Upgrade buttons

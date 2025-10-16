@@ -354,6 +354,28 @@ body {
     box-shadow: 0 5px 20px rgba(56, 239, 125, 0.4);
 }
 
+/* Back to Menu Button (smaller, less prominent) */
+.back-to-menu-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    color: white;
+    border: 2px solid rgba(255, 107, 107, 0.5);
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+.back-to-menu-btn:hover {
+    opacity: 1;
+    transform: scale(1.02);
+    box-shadow: 0 3px 15px rgba(255, 107, 107, 0.4);
+}
+
 /* Game Over Screen */
 .game-over {
     position: absolute;
@@ -687,6 +709,11 @@ body {
     .resume-btn {
         padding: 10px;
         font-size: 14px;
+    }
+    
+    .back-to-menu-btn {
+        padding: 8px 10px;
+        font-size: 11px;
     }
     
     .menu-title {
