@@ -386,6 +386,9 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 400;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 0;
 }
 
 .main-menu.active {
@@ -401,6 +404,10 @@ body {
     border: 3px solid #00ffff;
     border-radius: 20px;
     box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+    margin: auto;
+    max-height: 95vh;
+    max-height: 95dvh;
+    overflow-y: auto;
 }
 
 .menu-title {
@@ -419,23 +426,23 @@ body {
 
 .menu-instructions {
     background: rgba(0, 0, 0, 0.3);
-    padding: 25px;
+    padding: 20px;
     border-radius: 15px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     text-align: left;
 }
 
 .menu-instructions h3 {
     color: #00ffff;
     font-size: 22px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
 .menu-instructions p {
     font-size: 16px;
     color: #ccc;
-    margin: 10px 0;
+    margin: 8px 0;
     padding-left: 10px;
 }
 
@@ -1836,6 +1843,54 @@ body {
         font-size: 24px;
     }
     
+    /* Main menu adjustments for mobile */
+    .main-menu {
+        padding: 10px 0;
+    }
+    
+    .menu-content {
+        padding: 20px;
+        width: 95%;
+        max-height: 90vh;
+        max-height: 90dvh;
+    }
+    
+    .menu-title {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+    
+    .current-player-name {
+        font-size: 14px;
+        margin: 5px 0;
+    }
+    
+    .menu-instructions {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .menu-instructions h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+    
+    .menu-instructions p {
+        font-size: 14px;
+        margin: 5px 0;
+    }
+    
+    .start-btn {
+        padding: 12px 30px;
+        font-size: 18px;
+        margin: 15px 0;
+    }
+    
+    .menu-buttons {
+        margin-top: 15px;
+        gap: 10px;
+    }
+    
     /* Ensure panels fit on small screens */
     .panel {
         width: 95vw;
@@ -1873,6 +1928,52 @@ body {
 
 /* Very small screens */
 @media (max-width: 400px) {
+    .menu-content {
+        padding: 15px;
+        max-height: 92vh;
+        max-height: 92dvh;
+    }
+    
+    .menu-title {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+    
+    .current-player-name {
+        font-size: 12px;
+    }
+    
+    .menu-instructions {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .menu-instructions h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+    
+    .menu-instructions p {
+        font-size: 12px;
+        margin: 4px 0;
+    }
+    
+    .start-btn {
+        padding: 10px 25px;
+        font-size: 16px;
+        margin: 12px 0;
+    }
+    
+    .menu-buttons {
+        margin-top: 12px;
+        gap: 8px;
+    }
+    
+    .menu-btn {
+        font-size: 12px;
+        padding: 10px 12px;
+    }
+    
     .panel {
         width: 98vw;
         max-height: 90vh;
