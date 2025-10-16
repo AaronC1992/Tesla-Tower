@@ -2633,6 +2633,37 @@ class TowerDefenseGame {
         // Save player name
         localStorage.setItem('playerName', playerName);
         
+        // Reset to slot 1 for new player and clear any existing permanent stats
+        this.currentSlot = 1;
+        localStorage.setItem('currentSlot', '1');
+        
+        // Initialize fresh permanent stats for new player
+        this.permStats = {
+            totalKills: 0,
+            bonusDamage: 0,
+            bonusHealth: 0,
+            bonusClickDamage: 0,
+            bonusStartGold: 0,
+            totalDamageDealt: 0,
+            totalClicks: 0,
+            highestWave: 0,
+            totalGamesPlayed: 0,
+            totalGoldEarned: 0,
+            bossesKilled: 0,
+            zombieKills: {
+                normal: 0,
+                strong: 0,
+                runner: 0,
+                tank: 0,
+                exploder: 0,
+                boss: 0
+            }
+        };
+        this.savePermanentStats();
+        
+        // Re-apply bonuses (which will be zero for new player)
+        this.applyPermanentBonuses();
+        
         // Hide name input, show main menu
         document.getElementById('nameInputScreen').classList.remove('active');
         document.getElementById('mainMenu').classList.add('active');
