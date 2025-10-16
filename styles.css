@@ -492,6 +492,19 @@ body {
     box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
 }
 
+/* New Player / Logout Button */
+.logout-btn {
+    background: rgba(255, 68, 68, 0.1) !important;
+    border-color: #ff4444 !important;
+    color: #ff4444 !important;
+    grid-column: 1 / -1;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 68, 68, 0.2) !important;
+    box-shadow: 0 5px 15px rgba(255, 68, 68, 0.3) !important;
+}
+
 /* Menu Buttons Grid */
 .menu-buttons {
     display: grid;
@@ -1221,8 +1234,10 @@ body {
 
 #achievementsBackdrop,
 #saveSlotBackdrop,
-#enemyTypesBackdrop {
-    z-index: 9998; /* Behind panel class (9999) */
+#enemyTypesBackdrop,
+#challengesBackdrop,
+#leaderboardsBackdrop {
+    z-index: 10001; /* Above title screen (10000) */
 }
 
 /* Save Slots Panel */
@@ -1241,7 +1256,7 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
-    z-index: 9999;
+    z-index: 10002;
     transition: transform 0.3s ease, opacity 0.3s ease;
     opacity: 0;
     overflow-y: auto;
@@ -1452,3 +1467,373 @@ body {
         height: 80px;
     }
 }
+
+/* Daily Challenges Styles */
+.challenges-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.challenge-card {
+    background: rgba(0, 255, 255, 0.1);
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.challenge-card.completed {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: rgba(0, 255, 0, 0.5);
+}
+
+.challenge-card h3 {
+    margin: 0 0 10px 0;
+    color: #00ffff;
+    font-size: 18px;
+}
+
+.challenge-card.completed h3 {
+    color: #00ff00;
+}
+
+.challenge-card p {
+    margin: 5px 0;
+    color: #ccc;
+}
+
+.challenge-reward {
+    color: #ffd700 !important;
+    font-weight: bold;
+    margin-top: 10px !important;
+}
+
+.challenge-status {
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.challenge-status.completed {
+    background: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+}
+
+.challenge-status.in-progress {
+    background: rgba(255, 255, 0, 0.2);
+    color: #ffff00;
+}
+
+/* Leaderboards Styles */
+.leaderboards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.leaderboard-section {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.leaderboard-section h3 {
+    text-align: center;
+    color: #00ffff;
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.leaderboard-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 5px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.leaderboard-entry:hover {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 0.4);
+}
+
+.leaderboard-entry.rank-1 {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.5);
+}
+
+.leaderboard-entry.rank-2 {
+    background: rgba(192, 192, 192, 0.2);
+    border-color: rgba(192, 192, 192, 0.5);
+}
+
+.leaderboard-entry.rank-3 {
+    background: rgba(205, 127, 50, 0.2);
+    border-color: rgba(205, 127, 50, 0.5);
+}
+
+.leaderboard-rank {
+    font-weight: bold;
+    font-size: 16px;
+    width: 30px;
+    text-align: center;
+}
+
+.leaderboard-entry.rank-1 .leaderboard-rank {
+    color: #ffd700;
+}
+
+.leaderboard-entry.rank-2 .leaderboard-rank {
+    color: #c0c0c0;
+}
+
+.leaderboard-entry.rank-3 .leaderboard-rank {
+    color: #cd7f32;
+}
+
+.leaderboard-name {
+    flex: 1;
+    color: #fff;
+    margin: 0 10px;
+}
+
+.leaderboard-score {
+    font-weight: bold;
+    color: #00ffff;
+    font-size: 16px;
+}
+
+.leaderboard-date {
+    color: #888;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+/* Title Screen Styles */
+.title-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.title-screen.active {
+    display: flex;
+}
+
+.title-content {
+    text-align: center;
+    padding: 40px;
+}
+
+.title-logo {
+    font-size: 64px;
+    color: #00ffff;
+    text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #00ffff;
+    margin-bottom: 20px;
+    animation: titlePulse 2s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+    0%, 100% { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #00ffff; }
+    50% { text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 90px #00ffff; }
+}
+
+.title-tagline {
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 60px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.title-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.title-btn {
+    background: linear-gradient(135deg, #00ffff, #00cccc);
+    border: 3px solid #00ffff;
+    color: #000;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 20px 40px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.title-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+    background: linear-gradient(135deg, #00ffff, #00eeee);
+}
+
+.title-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-icon {
+    font-size: 32px;
+}
+
+.btn-text {
+    flex: 1;
+}
+
+/* Name Input Screen */
+.name-input-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+}
+
+.name-input-screen.active {
+    display: flex;
+}
+
+.name-input-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 4px solid #00ffff;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+    max-width: 500px;
+    width: 90%;
+}
+
+.name-input-content h2 {
+    color: #00ffff;
+    font-size: 36px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+.name-input-content p {
+    color: #ccc;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.name-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 20px;
+    border: 3px solid #00ffff;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    text-align: center;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.name-input:focus {
+    outline: none;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.name-input::placeholder {
+    color: #666;
+}
+
+.name-input-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.name-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #00ffff, #00cccc);
+    border: 3px solid #00ffff;
+    color: #000;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.name-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+}
+
+.name-btn.secondary {
+    background: linear-gradient(135deg, #666, #555);
+    border-color: #888;
+    box-shadow: 0 0 15px rgba(136, 136, 136, 0.5);
+}
+
+.name-btn.secondary:hover {
+    box-shadow: 0 0 30px rgba(136, 136, 136, 0.8);
+}
+
+/* Current Player Display */
+.current-player {
+    color: #ffd700;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .title-logo {
+        font-size: 36px;
+    }
+    
+    .title-tagline {
+        font-size: 18px;
+    }
+    
+    .title-btn {
+        font-size: 18px;
+        padding: 15px 30px;
+    }
+    
+    .btn-icon {
+        font-size: 24px;
+    }
+}
+

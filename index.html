@@ -39,11 +39,48 @@
         <!-- Sound Toggle Button (top left) -->
         <button class="sound-toggle" id="soundToggle">🔊</button>
 
-        <!-- Main Menu (shown on start) -->
-        <div class="main-menu active" id="mainMenu">
+        <!-- Title Screen (shown on first load) -->
+        <div class="title-screen active" id="titleScreen">
+            <div class="title-content">
+                <h1 class="title-logo">⚡ TESLA TOWER DEFENSE ⚡</h1>
+                <p class="title-tagline">Defend Against the Undead Horde!</p>
+                
+                <div class="title-buttons">
+                    <button class="title-btn" id="newGameBtn">
+                        <span class="btn-icon">🆕</span>
+                        <span class="btn-text">NEW GAME</span>
+                    </button>
+                    <button class="title-btn" id="loadGameTitleBtn">
+                        <span class="btn-icon">📂</span>
+                        <span class="btn-text">LOAD GAME</span>
+                    </button>
+                    <button class="title-btn" id="closeGameBtn">
+                        <span class="btn-icon">❌</span>
+                        <span class="btn-text">EXIT GAME</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Name Input Screen -->
+        <div class="name-input-screen" id="nameInputScreen">
+            <div class="name-input-content">
+                <h2>⚡ Enter Your Name ⚡</h2>
+                <p>This will be used for your save slot and leaderboards</p>
+                <input type="text" id="playerNameInput" class="name-input" maxlength="20" placeholder="Enter your name...">
+                <div class="name-input-buttons">
+                    <button class="name-btn" id="confirmNameBtn">START ADVENTURE</button>
+                    <button class="name-btn secondary" id="cancelNameBtn">CANCEL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Menu (shown after name entry) -->
+        <div class="main-menu" id="mainMenu">
             <div class="menu-content">
                 <h1 class="menu-title">⚡ TESLA TOWER</h1>
                 <p class="menu-subtitle">Defend your tower from endless zombie waves!</p>
+                <p class="current-player" id="currentPlayerName">Player: Guest</p>
                 <div class="menu-instructions">
                     <h3>How to Play:</h3>
                     <p>Zombies spawn from all directions</p>
@@ -62,6 +99,9 @@
                     <button class="menu-btn" id="statsBtn">STATISTICS</button>
                     <button class="menu-btn" id="achievementsBtn">ACHIEVEMENTS</button>
                     <button class="menu-btn" id="enemyTypesBtn">ENEMY TYPES</button>
+                    <button class="menu-btn" id="challengesBtn">DAILY CHALLENGES</button>
+                    <button class="menu-btn" id="leaderboardsBtn">LEADERBOARDS</button>
+                    <button class="menu-btn logout-btn" id="logoutBtn">NEW PLAYER</button>
                 </div>
             </div>
         </div>
@@ -180,7 +220,10 @@
                 <button class="save-load-btn" id="enemyTypesUpgradeBtn">🧟 ENEMIES</button>
             </div>
             
-            <button class="resume-btn" id="resumeBtn">▶ RESUME GAME</button>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="resume-btn" id="resumeBtn" style="flex: 1;">▶ RESUME GAME</button>
+                <button class="resume-btn" id="backToMenuBtn" style="flex: 1; background: linear-gradient(135deg, #ff6b6b, #ee5a6f);">🏠 MAIN MENU</button>
+            </div>
         </div>
 
         <!-- Game Over Screen -->
@@ -458,6 +501,40 @@
                         <p class="enemy-desc">Powerful boss with huge rewards!</p>
                         <p class="enemy-kills"><strong>💀 Kills:</strong> <span id="killsBoss">0</span></p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Challenges Panel -->
+    <div class="panel-backdrop" id="challengesBackdrop"></div>
+    <div class="panel" id="challengesPanel">
+        <div class="panel-content">
+            <button class="close-btn" id="closeChallenges">✖</button>
+            <h2 style="text-align: center; margin-bottom: 10px;">🏆 DAILY CHALLENGES 🏆</h2>
+            <p style="text-align: center; color: #ffd700; margin-bottom: 20px;">Complete challenges to earn Total Kills!</p>
+            <div id="challengesList" class="challenges-list"></div>
+        </div>
+    </div>
+
+    <!-- Leaderboards Panel -->
+    <div class="panel-backdrop" id="leaderboardsBackdrop"></div>
+    <div class="panel" id="leaderboardsPanel">
+        <div class="panel-content">
+            <button class="close-btn" id="closeLeaderboards">✖</button>
+            <h2 style="text-align: center; margin-bottom: 20px;">🏅 LEADERBOARDS 🏅</h2>
+            <div class="leaderboards-container">
+                <div class="leaderboard-section">
+                    <h3>⭐ Highest Wave</h3>
+                    <div id="leaderboardWave" class="leaderboard-list"></div>
+                </div>
+                <div class="leaderboard-section">
+                    <h3>💀 Most Kills</h3>
+                    <div id="leaderboardKills" class="leaderboard-list"></div>
+                </div>
+                <div class="leaderboard-section">
+                    <h3>⚡ Fastest to Wave 20</h3>
+                    <div id="leaderboardSpeed" class="leaderboard-list"></div>
                 </div>
             </div>
         </div>

@@ -35,18 +35,19 @@ class TowerDefenseGame {
             runner: 0,
             tank: 0,
             exploder: 0,
+            spawner: 0,
             boss: 0
         };
         
-        // Tower stats (with permanent bonuses applied)
+        // Tower stats (base stats - bonuses will be applied after loading permStats)
         this.tower = {
             x: 0, // Will be set to center
             y: 0, // Will be set to center
             radius: 30,
-            health: 100 + this.permStats.bonusHealth,
-            maxHealth: 100 + this.permStats.bonusHealth,
+            health: 100,
+            maxHealth: 100,
             level: 1,
-            damage: 10 + this.permStats.bonusDamage,
+            damage: 10,
             range: 150,
             fireRate: 1000, // milliseconds
             lastFire: 0,
@@ -57,8 +58,8 @@ class TowerDefenseGame {
             maxShield: 0 // Maximum shield capacity
         };
         
-        // Click/Tap damage (with permanent bonus)
-        this.clickDamage = 5 + this.permStats.bonusClickDamage;
+        // Click/Tap damage (base - bonus will be applied after loading permStats)
+        this.clickDamage = 5;
         this.isMouseDown = false;
         this.lastClickTime = 0;
         this.clickFireRate = 150; // Random strike spawn rate (150ms)
@@ -88,6 +89,21 @@ class TowerDefenseGame {
         this.lightning = []; // Lightning effects
         this.particles = []; // Visual effects
         this.damageNumbers = []; // Floating damage numbers
+        this.goldCoins = []; // Flying gold coins effect
+        this.towerSparks = []; // Electric sparks from tower
+        this.impactParticles = []; // Impact burst effects
+        
+        // Daily Challenges
+        this.loadDailyChallenges();
+        this.challengeTracking = {
+            upgradesUsed: 0,
+            clickKills: 0,
+            damageTaken: 0
+        };
+        
+        // Leaderboards
+        this.loadLeaderboards();
+        this.runStartTime = null;
         
         // Spawning
         this.spawnRate = 2000; // Start slow
@@ -116,10 +132,29 @@ class TowerDefenseGame {
     }
     
     init() {
+        // Apply permanent bonuses now that tower exists
+        this.applyPermanentBonuses();
+        
         this.setupEventListeners();
         this.setupBackdropCloseListeners();
+        this.setupTitleScreen();
         this.updateUI();
         this.gameLoop();
+    }
+    
+    setupTitleScreen() {
+        // Check if player name exists
+        const playerName = localStorage.getItem('playerName');
+        if (playerName) {
+            // Player has a name, show main menu
+            document.getElementById('titleScreen').classList.remove('active');
+            document.getElementById('mainMenu').classList.add('active');
+            document.getElementById('currentPlayerName').textContent = `Player: ${playerName}`;
+        } else {
+            // No player name, show title screen
+            document.getElementById('titleScreen').classList.add('active');
+            document.getElementById('mainMenu').classList.remove('active');
+        }
     }
     
     setupBackdropCloseListeners() {
@@ -130,7 +165,9 @@ class TowerDefenseGame {
             { id: 'statsPanel', backdropId: 'statsBackdrop', closeMethod: () => this.closeStatsPanel() },
             { id: 'achievementsPanel', backdropId: 'achievementsBackdrop', closeMethod: () => this.closeAchievementsPanel() },
             { id: 'saveSlotPanel', backdropId: 'saveSlotBackdrop', closeMethod: () => this.closeSaveSlotPanel() },
-            { id: 'enemyTypesPanel', backdropId: 'enemyTypesBackdrop', closeMethod: () => this.closeEnemyTypesPanel() }
+            { id: 'enemyTypesPanel', backdropId: 'enemyTypesBackdrop', closeMethod: () => this.closeEnemyTypesPanel() },
+            { id: 'challengesPanel', backdropId: 'challengesBackdrop', closeMethod: () => this.closeChallengesPanel() },
+            { id: 'leaderboardsPanel', backdropId: 'leaderboardsBackdrop', closeMethod: () => this.closeLeaderboardsPanel() }
         ];
         
         panels.forEach(panel => {
@@ -144,6 +181,49 @@ class TowerDefenseGame {
     }
     
     setupEventListeners() {
+        // Title Screen buttons
+        document.getElementById('newGameBtn').addEventListener('click', () => {
+            this.showNameInput();
+        });
+        
+        document.getElementById('loadGameTitleBtn').addEventListener('click', () => {
+            this.openSaveSlotPanel();
+        });
+        
+        document.getElementById('closeGameBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit the game?')) {
+                window.close();
+                // If window.close() doesn't work (some browsers block it), show message
+                setTimeout(() => {
+                    alert('Please close this tab/window to exit the game.');
+                }, 100);
+            }
+        });
+        
+        // Name Input buttons
+        document.getElementById('confirmNameBtn').addEventListener('click', () => {
+            this.confirmPlayerName();
+        });
+        
+        document.getElementById('cancelNameBtn').addEventListener('click', () => {
+            this.cancelNameInput();
+        });
+        
+        // Allow Enter key in name input
+        document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.confirmPlayerName();
+            }
+        });
+        
+        // Logout / New Player button
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm('Start as a new player? This will return you to the title screen.')) {
+                localStorage.removeItem('playerName');
+                location.reload();
+            }
+        });
+        
         // Start button
         document.getElementById('startBtn').addEventListener('click', () => {
             this.startGame();
@@ -208,6 +288,24 @@ class TowerDefenseGame {
             this.closeEnemyTypesPanel();
         });
         
+        // Daily Challenges button
+        document.getElementById('challengesBtn').addEventListener('click', () => {
+            this.openChallengesPanel();
+        });
+        
+        document.getElementById('closeChallenges').addEventListener('click', () => {
+            this.closeChallengesPanel();
+        });
+        
+        // Leaderboards button
+        document.getElementById('leaderboardsBtn').addEventListener('click', () => {
+            this.openLeaderboardsPanel();
+        });
+        
+        document.getElementById('closeLeaderboards').addEventListener('click', () => {
+            this.closeLeaderboardsPanel();
+        });
+        
         // Upgrade button
         document.getElementById('upgradeBtn').addEventListener('click', () => {
             this.openUpgradePanel();
@@ -220,6 +318,10 @@ class TowerDefenseGame {
         
         document.getElementById('resumeBtn').addEventListener('click', () => {
             this.closeUpgradePanel();
+        });
+        
+        document.getElementById('backToMenuBtn').addEventListener('click', () => {
+            this.backToMainMenu();
         });
         
         // Upgrade buttons
@@ -381,7 +483,17 @@ class TowerDefenseGame {
     startGame() {
         console.log('Game started!');
         this.isGameStarted = true;
+        this.isGameOver = false; // Reset game over flag
+        this.isPaused = false; // Reset pause flag
         this.lastSpawn = performance.now(); // Initialize spawn timer
+        this.runStartTime = Date.now(); // Start run timer
+        
+        // Show daily challenges
+        console.log('=== DAILY CHALLENGES ===');
+        this.dailyChallenges.forEach(c => {
+            const status = c.completed ? '✅ COMPLETE' : '⏳ In Progress';
+            console.log(`${status} - ${c.name}: ${c.description} (Reward: +${c.reward} kills)`);
+        });
         
         const menu = document.getElementById('mainMenu');
         const upgradeBtn = document.getElementById('upgradeBtn');
@@ -409,6 +521,112 @@ class TowerDefenseGame {
         this.isPaused = false;
         document.getElementById('upgradeBackdrop').classList.remove('active');
         document.getElementById('upgradePanel').classList.remove('active');
+    }
+    
+    backToMainMenu() {
+        // Close upgrade panel first
+        document.getElementById('upgradeBackdrop').classList.remove('active');
+        document.getElementById('upgradePanel').classList.remove('active');
+        
+        // If game is in progress, save stats first
+        if (!this.isGameOver && this.isGameStarted) {
+            // Update permanent stats
+            this.permStats.totalKills += this.kills;
+            this.permStats.totalDamageDealt += this.sessionDamage;
+            this.permStats.totalClicks += this.sessionClicks;
+            this.permStats.totalGoldEarned += this.sessionGoldEarned;
+            this.permStats.bossesKilled += this.sessionBossKills;
+            this.permStats.totalGamesPlayed++;
+            
+            // Update zombie type kills
+            for (let type in this.sessionZombieKills) {
+                this.permStats.zombieKills[type] += this.sessionZombieKills[type];
+            }
+            
+            // Track highest wave
+            if (this.wave > this.permStats.highestWave) {
+                this.permStats.highestWave = this.wave;
+            }
+            
+            this.savePermanentStats();
+            this.checkAchievements();
+            this.checkDailyChallenges();
+            this.updateLeaderboards();
+        }
+        
+        // Reset the entire game state (similar to restart but stay on menu)
+        this.wave = 1;
+        this.kills = 0;
+        this.zombies = [];
+        this.lightning = [];
+        this.particles = [];
+        this.damageNumbers = [];
+        this.goldCoins = [];
+        this.towerSparks = [];
+        this.impactParticles = [];
+        this.zombiesSpawned = 0;
+        this.spawnRate = 2000;
+        this.bossSpawned = false;
+        
+        // Reset session stats
+        this.sessionDamage = 0;
+        this.sessionClicks = 0;
+        this.sessionGoldEarned = 0;
+        this.sessionBossKills = 0;
+        this.sessionZombieKills = {
+            normal: 0,
+            strong: 0,
+            runner: 0,
+            tank: 0,
+            exploder: 0,
+            spawner: 0,
+            boss: 0
+        };
+        
+        // Reset challenge tracking
+        this.challengeTracking = {
+            upgradesUsed: 0,
+            clickKills: 0,
+            damageTaken: 0
+        };
+        
+        // Reset tower to base + permanent bonuses
+        this.tower.level = 1;
+        this.tower.range = 150;
+        this.tower.fireRate = 1000;
+        this.tower.maxTargets = 1;
+        this.tower.chainLightning = 0;
+        this.tower.shield = 0;
+        this.tower.maxShield = 0;
+        this.applyPermanentBonuses();
+        
+        // Reset upgrade costs
+        this.upgradeCosts = { 
+            damage: 100, 
+            range: 80, 
+            fireRate: 120, 
+            health: 50, 
+            targets: 150, 
+            clickDamage: 80, 
+            chainLightning: 200, 
+            shield: 150 
+        };
+        
+        // Reset game state flags
+        this.isGameStarted = false;
+        this.isGameOver = false;
+        this.isPaused = false;
+        
+        // Hide upgrade button and show main menu
+        document.getElementById('upgradeBtn').classList.remove('active');
+        document.getElementById('mainMenu').classList.add('active');
+        document.getElementById('gameOver').classList.remove('active');
+        
+        // Clear the canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Update UI
+        this.updateUI();
     }
     
     handleCanvasClick(e) {
@@ -467,6 +685,11 @@ class TowerDefenseGame {
                 // Deal click damage
                 zombie.health -= this.clickDamage;
                 
+                // Track if killed by click
+                if (zombie.health <= 0) {
+                    this.challengeTracking.clickKills++;
+                }
+                
                 // Track damage dealt
                 this.sessionDamage += this.clickDamage;
                 
@@ -517,6 +740,9 @@ class TowerDefenseGame {
         }
         
         this.gold -= cost;
+        
+        // Track upgrades for daily challenges
+        this.challengeTracking.upgradesUsed++;
         
         switch(type) {
             case 'damage':
@@ -667,11 +893,13 @@ class TowerDefenseGame {
             
             if (this.wave >= 15 && rand < 0.15) {
                 zombieType = 'exploder';
-            } else if (this.wave >= 10 && rand < 0.25) {
+            } else if (this.wave >= 12 && rand < 0.2) {
+                zombieType = 'spawner';
+            } else if (this.wave >= 10 && rand < 0.3) {
                 zombieType = 'tank';
-            } else if (this.wave >= 7 && rand < 0.35) {
+            } else if (this.wave >= 7 && rand < 0.4) {
                 zombieType = 'runner';
-            } else if (this.wave >= 3 && rand < 0.5) {
+            } else if (this.wave >= 3 && rand < 0.55) {
                 zombieType = 'strong';
             } else {
                 zombieType = 'normal';
@@ -779,6 +1007,27 @@ class TowerDefenseGame {
                         isExploder: true
                     };
                     break;
+                    
+                case 'spawner':
+                    // Spawner Zombie - Splits into 2 smaller zombies on death
+                    zombie = {
+                        x: x,
+                        y: y,
+                        type: 'spawner',
+                        radius: 20,
+                        health: 35 + this.wave * 6,
+                        maxHealth: 35 + this.wave * 6,
+                        speed: 0.4 + this.wave * 0.04,
+                        goldValue: 18 + this.wave * 1.5,
+                        lastDamageTime: 0,
+                        damageRate: 1000,
+                        damage: 2,
+                        color: '#00ff88',
+                        emoji: '👥',
+                        isBoss: false,
+                        isSpawner: true
+                    };
+                    break;
             }
         }
         
@@ -811,6 +1060,7 @@ class TowerDefenseGame {
                         this.createParticles(zombie.x, zombie.y, '#00ddff', 3);
                     } else {
                         this.tower.health -= zombieDamage;
+                        this.challengeTracking.damageTaken += zombieDamage;
                         // Create red damage particle effect
                         this.createParticles(zombie.x, zombie.y, '#ff0000', 3);
                     }
@@ -828,6 +1078,28 @@ class TowerDefenseGame {
                 this.kills++;
                 this.gold += zombie.goldValue;
                 this.sessionGoldEarned += zombie.goldValue;
+                
+                // Create flying gold coin
+                const goldEl = document.getElementById('gold');
+                if (goldEl) {
+                    const rect = goldEl.getBoundingClientRect();
+                    const targetX = rect.left + rect.width / 2;
+                    const targetY = rect.top + rect.height / 2;
+                    const midX = (zombie.x + targetX) / 2;
+                    const midY = Math.min(zombie.y, targetY) - 100;
+                    this.goldCoins.push({
+                        x: zombie.x,
+                        y: zombie.y,
+                        startX: zombie.x,
+                        startY: zombie.y,
+                        midX: midX,
+                        midY: midY,
+                        targetX: targetX,
+                        targetY: targetY,
+                        progress: 0,
+                        size: Math.min(zombie.goldValue / 5, 8) + 3
+                    });
+                }
                 
                 // Track zombie type kills
                 if (zombie.type) {
@@ -858,6 +1130,35 @@ class TowerDefenseGame {
                         // Small explosion even if far away
                         this.createParticles(zombie.x, zombie.y, '#ff00ff', 8);
                     }
+                } else if (zombie.isSpawner) {
+                    // Spawner zombie splits into 2 smaller zombies on death
+                    this.showMessage('👥 SPAWNER SPLIT!', '#00ff88');
+                    this.createParticles(zombie.x, zombie.y, '#00ff88', 12);
+                    
+                    // Spawn 2 smaller zombies at the death location
+                    for (let j = 0; j < 2; j++) {
+                        const angleOffset = (j === 0 ? -0.5 : 0.5);
+                        const spawnX = zombie.x + Math.cos(angleOffset) * 30;
+                        const spawnY = zombie.y + Math.sin(angleOffset) * 30;
+                        
+                        this.zombies.push({
+                            x: spawnX,
+                            y: spawnY,
+                            type: 'normal',
+                            radius: 12,
+                            health: 15 + this.wave * 3,
+                            maxHealth: 15 + this.wave * 3,
+                            speed: 0.7 + this.wave * 0.06,
+                            goldValue: 8 + this.wave,
+                            lastDamageTime: 0,
+                            damageRate: 1000,
+                            damage: 1,
+                            color: '#00ff88',
+                            emoji: '🧟',
+                            isBoss: false,
+                            isSpawn: true
+                        });
+                    }
                 } else {
                     // Red blood splash when zombie dies
                     this.createParticles(zombie.x, zombie.y, '#ff0000', 5);
@@ -884,6 +1185,21 @@ class TowerDefenseGame {
         });
         
         if (targets.length > 0) {
+            // Create electric sparks around tower
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI * 2 * i / 6) + Math.random() * 0.5;
+                const dist = this.tower.radius + 10 + Math.random() * 15;
+                this.towerSparks.push({
+                    x: this.tower.x + Math.cos(angle) * dist,
+                    y: this.tower.y + Math.sin(angle) * dist,
+                    vx: Math.cos(angle) * 2,
+                    vy: Math.sin(angle) * 2,
+                    life: 300,
+                    size: Math.random() * 2 + 1,
+                    color: Math.random() > 0.5 ? '#00ffff' : '#ffffff'
+                });
+            }
+            
             // Attack up to maxTargets closest zombies with tesla effect
             const sorted = targets.sort((a, b) => {
                 const distA = Math.sqrt((a.x - this.tower.x) ** 2 + (a.y - this.tower.y) ** 2);
@@ -926,6 +1242,21 @@ class TowerDefenseGame {
             life: 200, // milliseconds
             isChain: chainCount > 0 // Mark chain lightning for different effect
         });
+        
+        // Create impact effect
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 * i / 8);
+            const speed = Math.random() * 3 + 2;
+            this.impactParticles.push({
+                x: target.x,
+                y: target.y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 400,
+                color: Math.random() > 0.5 ? '#ffff00' : '#ffffff',
+                radius: Math.random() * 2 + 1
+            });
+        }
         
         // Create small cyan splash where tower attack lands
         this.createParticles(target.x, target.y, '#00ffff', 3);
@@ -1015,6 +1346,45 @@ class TowerDefenseGame {
             this.lightning[i].life -= deltaTime;
             if (this.lightning[i].life <= 0) {
                 this.lightning.splice(i, 1);
+            }
+        }
+    }
+    
+    updateTowerSparks(deltaTime) {
+        for (let i = this.towerSparks.length - 1; i >= 0; i--) {
+            const spark = this.towerSparks[i];
+            spark.x += spark.vx;
+            spark.y += spark.vy;
+            spark.life -= deltaTime;
+            if (spark.life <= 0) {
+                this.towerSparks.splice(i, 1);
+            }
+        }
+    }
+    
+    updateImpactParticles(deltaTime) {
+        for (let i = this.impactParticles.length - 1; i >= 0; i--) {
+            const p = this.impactParticles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= deltaTime;
+            if (p.life <= 0) {
+                this.impactParticles.splice(i, 1);
+            }
+        }
+    }
+    
+    updateGoldCoins(deltaTime) {
+        for (let i = this.goldCoins.length - 1; i >= 0; i--) {
+            const coin = this.goldCoins[i];
+            coin.progress += 0.02;
+            if (coin.progress >= 1) {
+                this.goldCoins.splice(i, 1);
+            } else {
+                const t = coin.progress;
+                const invT = 1 - t;
+                coin.x = invT * invT * coin.startX + 2 * invT * t * coin.midX + t * t * coin.targetX;
+                coin.y = invT * invT * coin.startY + 2 * invT * t * coin.midY + t * t * coin.targetY;
             }
         }
     }
@@ -1190,6 +1560,41 @@ class TowerDefenseGame {
             this.ctx.fillText(dn.damage, dn.x, dn.y);
             this.ctx.globalAlpha = 1;
         });
+        
+        // Draw tower sparks
+        this.towerSparks.forEach(s => {
+            this.ctx.fillStyle = s.color;
+            this.ctx.globalAlpha = s.life / 300;
+            this.ctx.beginPath();
+            this.ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.globalAlpha = 1;
+        });
+        
+        // Draw impact particles
+        this.impactParticles.forEach(p => {
+            this.ctx.fillStyle = p.color;
+            this.ctx.globalAlpha = p.life / 400;
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.globalAlpha = 1;
+        });
+        
+        // Draw gold coins
+        this.goldCoins.forEach(coin => {
+            const alpha = coin.progress < 0.9 ? 1 : (1 - coin.progress) * 10;
+            this.ctx.globalAlpha = alpha;
+            this.ctx.fillStyle = '#ffd700';
+            this.ctx.beginPath();
+            this.ctx.arc(coin.x, coin.y, coin.size, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.fillStyle = '#ffed4e';
+            this.ctx.beginPath();
+            this.ctx.arc(coin.x - coin.size/3, coin.y - coin.size/3, coin.size/2, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.globalAlpha = 1;
+        });
     }
     
     updateUI() {
@@ -1197,6 +1602,13 @@ class TowerDefenseGame {
         document.getElementById('kills').textContent = this.kills;
         document.getElementById('gold').textContent = this.gold;
         document.getElementById('towerHealth').textContent = Math.max(0, Math.floor(this.tower.health));
+        
+        // Update player name display
+        const playerName = localStorage.getItem('playerName') || 'Guest';
+        const playerNameElement = document.getElementById('currentPlayerName');
+        if (playerNameElement) {
+            playerNameElement.textContent = `Player: ${playerName}`;
+        }
     }
     
     showMessage(text, color) {
@@ -1234,6 +1646,29 @@ class TowerDefenseGame {
         // Check for new achievements
         this.checkAchievements();
         
+        // Check daily challenges
+        this.checkDailyChallenges();
+        
+        // Update leaderboards
+        this.updateLeaderboards();
+        
+        // Display leaderboards in console
+        console.log('\n=== LEADERBOARDS ===');
+        console.log('Highest Wave:');
+        this.leaderboards.highestWave.slice(0, 5).forEach((entry, i) => {
+            console.log(`${i + 1}. ${entry.name} - Wave ${entry.score} (${entry.date})`);
+        });
+        console.log('\nMost Kills:');
+        this.leaderboards.mostKills.slice(0, 5).forEach((entry, i) => {
+            console.log(`${i + 1}. ${entry.name} - ${entry.score} kills (${entry.date})`);
+        });
+        if (this.leaderboards.fastestToWave20.length > 0) {
+            console.log('\nFastest to Wave 20:');
+            this.leaderboards.fastestToWave20.slice(0, 5).forEach((entry, i) => {
+                console.log(`${i + 1}. ${entry.name} - ${this.formatTime(entry.score)} (${entry.date})`);
+            });
+        }
+        
         document.getElementById('finalWave').textContent = this.wave;
         document.getElementById('finalKills').textContent = this.kills;
         document.getElementById('gameOver').classList.add('active');
@@ -1246,6 +1681,16 @@ class TowerDefenseGame {
         this.sessionGoldEarned = 0;
         this.sessionBossKills = 0;
         
+        // Reset challenge tracking
+        this.challengeTracking = {
+            upgradesUsed: 0,
+            clickKills: 0,
+            damageTaken: 0
+        };
+        
+        // Start run timer
+        this.runStartTime = Date.now();
+        
         // Reset session zombie type kills
         this.sessionZombieKills = {
             normal: 0,
@@ -1253,24 +1698,24 @@ class TowerDefenseGame {
             runner: 0,
             tank: 0,
             exploder: 0,
+            spawner: 0,
             boss: 0
         };
         
-        // Reset everything (with permanent bonuses)
+        // Reset everything to base + permanent bonuses
         this.wave = 1;
         this.kills = 0;
-        this.gold = 100 + this.permStats.bonusStartGold;
-        this.tower.health = 100 + this.permStats.bonusHealth;
-        this.tower.maxHealth = 100 + this.permStats.bonusHealth;
         this.tower.level = 1;
-        this.tower.damage = 10 + this.permStats.bonusDamage;
         this.tower.range = 150;
         this.tower.fireRate = 1000;
         this.tower.maxTargets = 1;
         this.tower.chainLightning = 0;
         this.tower.shield = 0;
         this.tower.maxShield = 0;
-        this.clickDamage = 5 + this.permStats.bonusClickDamage;
+        
+        // Apply permanent bonuses (sets health, damage, click damage, gold)
+        this.applyPermanentBonuses();
+        
         this.upgradeCosts = { damage: 100, range: 80, fireRate: 120, health: 50, targets: 150, clickDamage: 80, chainLightning: 200, shield: 150 };
         this.zombies = [];
         this.lightning = [];
@@ -1315,6 +1760,9 @@ class TowerDefenseGame {
             this.updateLightning(deltaTime);
             this.updateParticles(deltaTime);
             this.updateDamageNumbers(deltaTime);
+            this.updateTowerSparks(deltaTime);
+            this.updateImpactParticles(deltaTime);
+            this.updateGoldCoins(deltaTime);
             this.handleContinuousShooting(currentTime);
             this.updateUI();
         }
@@ -1334,7 +1782,10 @@ class TowerDefenseGame {
         // If slot is provided, use it; otherwise use current slot
         const saveSlot = slot !== null ? slot : this.currentSlot;
         
+        const playerName = localStorage.getItem('playerName') || 'Player';
+        
         const saveData = {
+            playerName: playerName,
             wave: this.wave,
             kills: this.kills,
             gold: this.gold,
@@ -1358,7 +1809,7 @@ class TowerDefenseGame {
         };
         
         localStorage.setItem(`teslaTowerSave_slot${saveSlot}`, JSON.stringify(saveData));
-        this.showMessage(`Game Saved to Slot ${saveSlot}! ✓`, '#00ff00');
+        this.showMessage(`Game Saved! ✓`, '#00ff00');
         this.updateSaveSlotInfo();
     }
     
@@ -1379,6 +1830,11 @@ class TowerDefenseGame {
             // Update current slot
             this.currentSlot = loadSlot;
             localStorage.setItem('currentSlot', loadSlot);
+            
+            // Restore player name if it exists in save data
+            if (data.playerName) {
+                localStorage.setItem('playerName', data.playerName);
+            }
             
             // Reload permanent stats and achievements for this slot
             this.loadPermanentStats();
@@ -1403,15 +1859,25 @@ class TowerDefenseGame {
             this.zombiesPerWave = data.zombiesPerWave;
             this.spawnRate = data.spawnRate;
             
-            // Start the game if not started
-            if (!this.isGameStarted) {
-                this.startGame();
-            }
-            
-            // Clear existing zombies and start fresh wave
+            // Clear existing zombies
             this.zombies = [];
             this.zombiesSpawned = 0;
             this.bossSpawned = false;
+            
+            // Reset game state flags
+            this.isGameStarted = false;
+            this.isGameOver = false;
+            this.isPaused = false;
+            
+            // Close save slot panel and show main menu
+            this.closeSaveSlotPanel();
+            document.getElementById('titleScreen').classList.remove('active');
+            document.getElementById('upgradeBtn').classList.remove('active');
+            document.getElementById('mainMenu').classList.add('active');
+            
+            // Update player name display
+            const loadedPlayerName = localStorage.getItem('playerName') || 'Player';
+            document.getElementById('currentPlayerName').textContent = `Player: ${loadedPlayerName}`;
             
             this.updateUI();
             this.updateUpgradePanel();
@@ -1440,7 +1906,10 @@ class TowerDefenseGame {
                 try {
                     const data = JSON.parse(saveData);
                     const date = new Date(data.timestamp);
+                    const playerName = data.playerName || 'Player';
+                    
                     let infoHTML = `
+                        <strong style="color: #00ffff;">${playerName}</strong><br>
                         <strong>Wave ${data.wave}</strong> - ${data.kills} Kills<br>
                         <small>${date.toLocaleDateString()} ${date.toLocaleTimeString()}</small>
                     `;
@@ -1530,16 +1999,41 @@ class TowerDefenseGame {
                     runner: 0,
                     tank: 0,
                     exploder: 0,
+                    spawner: 0,
                     boss: 0
                 }
             };
         }
         
+        // NOTE: Don't call applyPermanentBonuses here - tower doesn't exist yet!
+        // It will be called from init() after everything is set up
+        
         // Initialize achievements
         this.loadAchievements();
         
+        // Initialize daily challenges
+        this.loadDailyChallenges();
+        
+        // Initialize leaderboards
+        this.loadLeaderboards();
+        
         // Initialize sound system
         this.initSounds();
+    }
+    
+    applyPermanentBonuses() {
+        // Reset to base stats first
+        const baseHealth = 100;
+        const baseDamage = 10;
+        const baseClickDamage = 5;
+        const baseGold = 100;
+        
+        // Apply bonuses
+        this.tower.health = baseHealth + this.permStats.bonusHealth;
+        this.tower.maxHealth = baseHealth + this.permStats.bonusHealth;
+        this.tower.damage = baseDamage + this.permStats.bonusDamage;
+        this.clickDamage = baseClickDamage + this.permStats.bonusClickDamage;
+        this.gold = baseGold + this.permStats.bonusStartGold;
     }
     
     initSounds() {
@@ -1947,6 +2441,44 @@ class TowerDefenseGame {
         document.getElementById('enemyTypesPanel').classList.remove('active');
     }
     
+    openChallengesPanel() {
+        const backdrop = document.getElementById('challengesBackdrop');
+        const panel = document.getElementById('challengesPanel');
+        if (!backdrop || !panel) return; // Safety check
+        
+        backdrop.classList.add('active');
+        panel.classList.add('active');
+        this.updateChallengesPanel();
+    }
+    
+    closeChallengesPanel() {
+        const backdrop = document.getElementById('challengesBackdrop');
+        const panel = document.getElementById('challengesPanel');
+        if (!backdrop || !panel) return; // Safety check
+        
+        backdrop.classList.remove('active');
+        panel.classList.remove('active');
+    }
+    
+    openLeaderboardsPanel() {
+        const backdrop = document.getElementById('leaderboardsBackdrop');
+        const panel = document.getElementById('leaderboardsPanel');
+        if (!backdrop || !panel) return; // Safety check
+        
+        backdrop.classList.add('active');
+        panel.classList.add('active');
+        this.updateLeaderboardsPanel();
+    }
+    
+    closeLeaderboardsPanel() {
+        const backdrop = document.getElementById('leaderboardsBackdrop');
+        const panel = document.getElementById('leaderboardsPanel');
+        if (!backdrop || !panel) return; // Safety check
+        
+        backdrop.classList.remove('active');
+        panel.classList.remove('active');
+    }
+    
     updateEnemyTypesPanel() {
         // Update kill counts for each zombie type
         document.getElementById('killsNormal').textContent = this.permStats.zombieKills.normal;
@@ -1955,6 +2487,87 @@ class TowerDefenseGame {
         document.getElementById('killsTank').textContent = this.permStats.zombieKills.tank;
         document.getElementById('killsExploder').textContent = this.permStats.zombieKills.exploder;
         document.getElementById('killsBoss').textContent = this.permStats.zombieKills.boss;
+    }
+    
+    updateChallengesPanel() {
+        const container = document.getElementById('challengesList');
+        if (!container) return; // Safety check
+        
+        container.innerHTML = '';
+        
+        this.dailyChallenges.forEach(challenge => {
+            const challengeEl = document.createElement('div');
+            challengeEl.className = `challenge-card ${challenge.completed ? 'completed' : ''}`;
+            
+            let progressText = '';
+            if (challenge.completed) {
+                progressText = '<div class="challenge-status completed">✓ COMPLETED</div>';
+            } else {
+                progressText = '<div class="challenge-status in-progress">In Progress...</div>';
+            }
+            
+            challengeEl.innerHTML = `
+                <h3>${challenge.name}</h3>
+                <p>${challenge.description}</p>
+                <p class="challenge-reward">Reward: +${challenge.reward} Total Kills</p>
+                ${progressText}
+            `;
+            
+            container.appendChild(challengeEl);
+        });
+    }
+    
+    updateLeaderboardsPanel() {
+        // Update Highest Wave Leaderboard
+        const waveContainer = document.getElementById('leaderboardWave');
+        if (!waveContainer) return; // Safety check
+        
+        waveContainer.innerHTML = '';
+        this.leaderboards.highestWave.forEach((entry, index) => {
+            const entryEl = document.createElement('div');
+            entryEl.className = `leaderboard-entry rank-${index + 1}`;
+            entryEl.innerHTML = `
+                <span class="leaderboard-rank">${index + 1}</span>
+                <span class="leaderboard-name">${entry.name}</span>
+                <span class="leaderboard-score">Wave ${entry.score}</span>
+                <span class="leaderboard-date">${entry.date}</span>
+            `;
+            waveContainer.appendChild(entryEl);
+        });
+        
+        // Update Most Kills Leaderboard
+        const killsContainer = document.getElementById('leaderboardKills');
+        if (!killsContainer) return; // Safety check
+        
+        killsContainer.innerHTML = '';
+        this.leaderboards.mostKills.forEach((entry, index) => {
+            const entryEl = document.createElement('div');
+            entryEl.className = `leaderboard-entry rank-${index + 1}`;
+            entryEl.innerHTML = `
+                <span class="leaderboard-rank">${index + 1}</span>
+                <span class="leaderboard-name">${entry.name}</span>
+                <span class="leaderboard-score">${entry.score} Kills</span>
+                <span class="leaderboard-date">${entry.date}</span>
+            `;
+            killsContainer.appendChild(entryEl);
+        });
+        
+        // Update Fastest to Wave 20 Leaderboard
+        const speedContainer = document.getElementById('leaderboardSpeed');
+        if (!speedContainer) return; // Safety check
+        
+        speedContainer.innerHTML = '';
+        this.leaderboards.fastestToWave20.forEach((entry, index) => {
+            const entryEl = document.createElement('div');
+            entryEl.className = `leaderboard-entry rank-${index + 1}`;
+            entryEl.innerHTML = `
+                <span class="leaderboard-rank">${index + 1}</span>
+                <span class="leaderboard-name">${entry.name}</span>
+                <span class="leaderboard-score">${this.formatTime(entry.score)}</span>
+                <span class="leaderboard-date">${entry.date}</span>
+            `;
+            speedContainer.appendChild(entryEl);
+        });
     }
     
     updateAchievementsPanel() {
@@ -1990,6 +2603,202 @@ class TowerDefenseGame {
         const unlocked = this.achievements.filter(a => a.unlocked).length;
         const total = this.achievements.length;
         document.getElementById('achievementsCount').textContent = `${unlocked} / ${total} Unlocked`;
+    }
+    
+    // ==========================================
+    // TITLE SCREEN & NAME INPUT
+    // ==========================================
+    
+    showNameInput() {
+        document.getElementById('titleScreen').classList.remove('active');
+        document.getElementById('nameInputScreen').classList.add('active');
+        document.getElementById('playerNameInput').value = '';
+        document.getElementById('playerNameInput').focus();
+    }
+    
+    confirmPlayerName() {
+        const nameInput = document.getElementById('playerNameInput');
+        const playerName = nameInput.value.trim();
+        
+        if (playerName.length === 0) {
+            alert('Please enter a name!');
+            return;
+        }
+        
+        if (playerName.length < 2) {
+            alert('Name must be at least 2 characters long!');
+            return;
+        }
+        
+        // Save player name
+        localStorage.setItem('playerName', playerName);
+        
+        // Hide name input, show main menu
+        document.getElementById('nameInputScreen').classList.remove('active');
+        document.getElementById('mainMenu').classList.add('active');
+        document.getElementById('currentPlayerName').textContent = `Player: ${playerName}`;
+        
+        this.showMessage(`Welcome, ${playerName}! 👋`, '#00ff00');
+    }
+    
+    cancelNameInput() {
+        document.getElementById('nameInputScreen').classList.remove('active');
+        document.getElementById('titleScreen').classList.add('active');
+    }
+    
+    // ==========================================
+    // DAILY CHALLENGES
+    // ==========================================
+    
+    loadDailyChallenges() {
+        const today = new Date().toDateString();
+        const saved = localStorage.getItem('dailyChallenges');
+        
+        // Define the challenge templates with check functions
+        const challengeTemplates = [
+            {
+                id: 1,
+                name: "No Upgrades Challenge",
+                description: "Survive 10 waves without using any upgrades",
+                goal: 10,
+                progress: 0,
+                completed: false,
+                reward: 100,
+                check: () => this.wave >= 10 && this.challengeTracking.upgradesUsed === 0
+            },
+            {
+                id: 2,
+                name: "Click Master",
+                description: "Kill 100 zombies using only click damage",
+                goal: 100,
+                progress: 0,
+                completed: false,
+                reward: 150,
+                check: () => this.challengeTracking.clickKills >= 100
+            },
+            {
+                id: 3,
+                name: "Untouchable",
+                description: "Beat wave 15 without taking any damage",
+                goal: 15,
+                progress: 0,
+                completed: false,
+                reward: 200,
+                check: () => this.wave >= 15 && this.challengeTracking.damageTaken === 0
+            }
+        ];
+        
+        if (saved) {
+            const data = JSON.parse(saved);
+            // Check if challenges are from today
+            if (data.date === today) {
+                // Restore challenges and add check functions back
+                this.dailyChallenges = data.challenges.map((savedChallenge, index) => {
+                    return {
+                        ...savedChallenge,
+                        check: challengeTemplates[index].check
+                    };
+                });
+                return;
+            }
+        }
+        
+        // Generate new challenges for today
+        this.dailyChallenges = challengeTemplates;
+        this.saveDailyChallenges();
+    }
+    
+    saveDailyChallenges() {
+        const today = new Date().toDateString();
+        localStorage.setItem('dailyChallenges', JSON.stringify({
+            date: today,
+            challenges: this.dailyChallenges
+        }));
+    }
+    
+    checkDailyChallenges() {
+        this.dailyChallenges.forEach(challenge => {
+            try {
+                if (!challenge.completed && challenge.check && challenge.check()) {
+                    challenge.completed = true;
+                    challenge.progress = challenge.goal;
+                    this.permStats.totalKills += challenge.reward;
+                    this.showMessage(`🏆 Challenge Complete! +${challenge.reward} Total Kills!`, '#ffd700');
+                    this.saveDailyChallenges();
+                    this.savePermanentStats();
+                }
+            } catch (error) {
+                console.error('Error checking challenge:', challenge.name, error);
+            }
+        });
+    }
+    
+    // ==========================================
+    // LEADERBOARDS
+    // ==========================================
+    
+    loadLeaderboards() {
+        const saved = localStorage.getItem('leaderboards');
+        
+        if (saved) {
+            this.leaderboards = JSON.parse(saved);
+        } else {
+            this.leaderboards = {
+                highestWave: [],
+                mostKills: [],
+                fastestToWave20: []
+            };
+        }
+    }
+    
+    saveLeaderboards() {
+        localStorage.setItem('leaderboards', JSON.stringify(this.leaderboards));
+    }
+    
+    updateLeaderboards() {
+        const playerName = localStorage.getItem('playerName') || 'Player';
+        const currentDate = new Date().toLocaleDateString();
+        
+        // Highest Wave
+        const waveEntry = {
+            name: playerName,
+            score: this.wave,
+            date: currentDate
+        };
+        this.leaderboards.highestWave.push(waveEntry);
+        this.leaderboards.highestWave.sort((a, b) => b.score - a.score);
+        this.leaderboards.highestWave = this.leaderboards.highestWave.slice(0, 10);
+        
+        // Most Kills
+        const killsEntry = {
+            name: playerName,
+            score: this.kills,
+            date: currentDate
+        };
+        this.leaderboards.mostKills.push(killsEntry);
+        this.leaderboards.mostKills.sort((a, b) => b.score - a.score);
+        this.leaderboards.mostKills = this.leaderboards.mostKills.slice(0, 10);
+        
+        // Fastest to Wave 20
+        if (this.wave >= 20 && this.runStartTime) {
+            const timeElapsed = Math.floor((Date.now() - this.runStartTime) / 1000);
+            const timeEntry = {
+                name: playerName,
+                score: timeElapsed,
+                date: currentDate
+            };
+            this.leaderboards.fastestToWave20.push(timeEntry);
+            this.leaderboards.fastestToWave20.sort((a, b) => a.score - b.score);
+            this.leaderboards.fastestToWave20 = this.leaderboards.fastestToWave20.slice(0, 10);
+        }
+        
+        this.saveLeaderboards();
+    }
+    
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 }
 
