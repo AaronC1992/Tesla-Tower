@@ -71,6 +71,9 @@ class TowerDefenseGame {
         window.addEventListener('orientationchange', () => {
             setTimeout(() => this.resizeCanvas(), 100);
         });
+        screen.orientation?.addEventListener('change', () => {
+            setTimeout(() => this.resizeCanvas(), 100);
+        });
         
         // Upgrade costs
         this.upgradeCosts = {

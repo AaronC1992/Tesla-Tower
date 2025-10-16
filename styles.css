@@ -1835,5 +1835,275 @@ body {
     .btn-icon {
         font-size: 24px;
     }
+    
+    /* Ensure panels fit on small screens */
+    .panel {
+        width: 95vw;
+        max-width: 95vw;
+        max-height: 85vh;
+        max-height: 85dvh;
+        padding: 15px;
+    }
+    
+    .panel h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .save-slots-container {
+        gap: 15px;
+    }
+    
+    .save-slot {
+        padding: 12px;
+    }
+    
+    .slot-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .slot-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        flex: 1 1 auto;
+        min-width: 80px;
+    }
 }
 
+/* Very small screens */
+@media (max-width: 400px) {
+    .panel {
+        width: 98vw;
+        max-height: 90vh;
+        max-height: 90dvh;
+        padding: 10px;
+    }
+    
+    .panel h2 {
+        font-size: 18px;
+    }
+    
+    .slot-info {
+        font-size: 12px;
+    }
+    
+    .slot-btn {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+}
+
+/* Landscape orientation improvements */
+@media (max-height: 600px) and (orientation: landscape) {
+    .game-header {
+        padding: 5px 10px;
+    }
+    
+    .game-header h1 {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    
+    .stat {
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+    
+    .main-menu {
+        padding: 10px;
+    }
+    
+    .menu-title {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+    
+    .menu-instructions {
+        padding: 10px;
+        font-size: 13px;
+    }
+    
+    .menu-instructions h3 {
+        font-size: 16px;
+    }
+    
+    .menu-instructions p {
+        font-size: 12px;
+        margin: 3px 0;
+    }
+    
+    .start-btn {
+        padding: 12px 30px;
+        font-size: 18px;
+        margin: 10px 0;
+    }
+    
+    .menu-buttons {
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .menu-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .panel {
+        max-height: 95vh;
+        max-height: 95dvh;
+        padding: 10px;
+    }
+    
+    .panel h2 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+    
+    .save-slots-container {
+        gap: 10px;
+    }
+    
+    .save-slot {
+        padding: 10px;
+    }
+    
+    .title-screen {
+        padding: 20px;
+    }
+    
+    .title-logo {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+    
+    .title-tagline {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .title-buttons {
+        gap: 10px;
+    }
+    
+    .title-btn {
+        padding: 12px 25px;
+        font-size: 16px;
+    }
+}
+
+/* Ultra-wide landscape mode (very short screens) */
+@media (max-height: 450px) and (orientation: landscape) {
+    .game-header h1 {
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+    
+    .stat {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+    
+    .menu-title {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    
+    .menu-instructions {
+        display: none; /* Hide instructions to save space */
+    }
+    
+    .start-btn {
+        padding: 8px 20px;
+        font-size: 16px;
+        margin: 5px 0;
+    }
+    
+    .menu-buttons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        margin-top: 5px;
+    }
+    
+    .menu-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    
+    .current-player-name {
+        font-size: 14px;
+        margin: 5px 0;
+    }
+    
+    .panel {
+        max-height: 98vh;
+        max-height: 98dvh;
+        padding: 8px;
+    }
+    
+    .panel h2 {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    
+    .save-slot {
+        padding: 8px;
+    }
+    
+    .slot-header h3 {
+        font-size: 14px;
+    }
+    
+    .slot-info {
+        font-size: 11px;
+    }
+    
+    .slot-btn {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+    
+    .title-logo {
+        font-size: 28px;
+        margin-bottom: 5px;
+    }
+    
+    .title-tagline {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .title-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .name-input-screen h2 {
+        font-size: 20px;
+    }
+    
+    .name-input-screen p {
+        font-size: 13px;
+    }
+}
+
+/* Ensure viewport height works correctly on iOS */
+@supports (-webkit-touch-callout: none) {
+    .game-container {
+        height: -webkit-fill-available;
+    }
+}
+
+/* Handle notches and safe areas on modern phones */
+@supports (padding: max(0px)) {
+    .game-header {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        padding-top: max(15px, env(safe-area-inset-top));
+    }
+    
+    .upgrade-btn {
+        right: max(20px, env(safe-area-inset-right));
+        bottom: max(20px, env(safe-area-inset-bottom));
+    }
+}
