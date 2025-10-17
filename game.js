@@ -2693,19 +2693,13 @@ class TowerDefenseGame {
             return false;
         }
         
-        // Check achievement requirement
-        if (!this.checkThemeUnlock(themeKey)) {
-            this.showMessage('Achievement requirement not met!', '#ff0000');
-            return false;
-        }
-        
         // Check gem cost
         if (this.permStats.gems < theme.cost) {
             this.showMessage(`Not enough gems! Need ${theme.cost}`, '#ff0000');
             return false;
         }
         
-        // Purchase theme
+        // Purchase theme (no achievement requirement needed, just gems)
         this.permStats.gems -= theme.cost;
         this.permStats.themes.unlocked.push(themeKey);
         this.savePermanentStats();
@@ -3546,6 +3540,7 @@ class TowerDefenseGame {
         Object.entries(themes).forEach(([key, theme]) => {
             const isUnlocked = unlockedThemes.includes(key);
             const isCurrent = currentTheme === key;
+            const hasEnoughGems = this.permStats.gems >= theme.cost;
             const canUnlock = this.checkThemeUnlock(key);
             
             const themeCard = document.createElement('div');
@@ -3553,12 +3548,12 @@ class TowerDefenseGame {
             if (isCurrent) themeCard.classList.add('current');
             if (!isUnlocked) themeCard.classList.add('locked');
             
-            // Get requirement text
+            // Get requirement text (informational only)
             let requirementText = '';
             if (!isUnlocked && theme.requirement) {
                 const achievement = this.achievements.find(a => a.id === theme.requirement);
                 requirementText = achievement ? `<div class="theme-requirement ${canUnlock ? 'met' : 'unmet'}">
-                    ${canUnlock ? '✓' : '🔒'} ${achievement.name}
+                    ${canUnlock ? '✓ Bonus: ' : '🎯 Unlock via: '}${achievement.name}
                 </div>` : '';
             }
             
@@ -3576,7 +3571,7 @@ class TowerDefenseGame {
                 ${isCurrent ? '<div class="theme-current">✓ ACTIVE</div>' : ''}
                 ${!isUnlocked ? `<div class="theme-cost">💎 ${theme.cost} gems</div>` : ''}
                 ${isUnlocked && !isCurrent ? '<button class="theme-apply-btn">APPLY</button>' : ''}
-                ${!isUnlocked && canUnlock ? '<button class="theme-unlock-btn">UNLOCK</button>' : ''}
+                ${!isUnlocked ? `<button class="theme-unlock-btn" ${!hasEnoughGems ? 'disabled' : ''}>UNLOCK</button>` : ''}
             `;
             
             // Add click handlers
@@ -3587,9 +3582,12 @@ class TowerDefenseGame {
                 });
             }
             
-            if (!isUnlocked && canUnlock) {
-                themeCard.querySelector('.theme-unlock-btn').addEventListener('click', () => {
-                    this.unlockTheme(key);
+            if (!isUnlocked) {
+                const unlockBtn = themeCard.querySelector('.theme-unlock-btn');
+                unlockBtn.addEventListener('click', () => {
+                    if (this.unlockTheme(key)) {
+                        this.updateThemesPanel();
+                    }
                 });
             }
             
