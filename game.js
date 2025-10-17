@@ -2933,7 +2933,6 @@ class TowerDefenseGame {
             this.settings = {
                 volume: 50,
                 soundEnabled: true,
-                difficulty: 'normal',
                 graphicsQuality: 'medium',
                 particlesEnabled: true,
                 screenShakeEnabled: true
@@ -2974,9 +2973,6 @@ class TowerDefenseGame {
             soundBtn.textContent = 'OFF';
         }
         
-        // Update difficulty
-        document.getElementById('difficultySelect').value = this.settings.difficulty;
-        
         // Update graphics
         document.getElementById('graphicsSelect').value = this.settings.graphicsQuality;
         
@@ -3005,14 +3001,9 @@ class TowerDefenseGame {
         // Get values from UI
         this.settings.volume = parseInt(document.getElementById('volumeSlider').value);
         this.settings.soundEnabled = !document.getElementById('soundToggleBtn').classList.contains('off');
-        const newDifficulty = document.getElementById('difficultySelect').value;
         this.settings.graphicsQuality = document.getElementById('graphicsSelect').value;
         this.settings.particlesEnabled = !document.getElementById('particlesToggleBtn').classList.contains('off');
         this.settings.screenShakeEnabled = !document.getElementById('screenShakeToggleBtn').classList.contains('off');
-        
-        // Check if difficulty changed
-        const difficultyChanged = this.settings.difficulty !== newDifficulty;
-        this.settings.difficulty = newDifficulty;
         
         // Save settings
         this.saveSettings();
@@ -3025,12 +3016,6 @@ class TowerDefenseGame {
         
         // Show confirmation
         this.showNarration('✓ Settings Applied!', 2000);
-        
-        // Warn about difficulty change
-        if (difficultyChanged && this.isGameStarted) {
-            alert('Difficulty has been changed! Your current game will restart.');
-            this.restart();
-        }
     }
     
     applySettingsToGame() {
@@ -3046,37 +3031,6 @@ class TowerDefenseGame {
         const soundToggle = document.getElementById('soundToggle');
         if (soundToggle) {
             soundToggle.textContent = this.soundEnabled ? '🔊' : '🔇';
-        }
-        
-        // Apply difficulty modifiers
-        this.applyDifficultyModifiers();
-    }
-    
-    applyDifficultyModifiers() {
-        // Difficulty is applied when starting new game or restarting
-        // This affects zombie spawning rates, player stats, etc.
-        
-        if (this.settings.difficulty === 'easy') {
-            this.difficultyMultiplier = {
-                playerHealth: 1.5,
-                goldMultiplier: 1.25,
-                zombieHealth: 0.8,
-                zombieSpeed: 0.9
-            };
-        } else if (this.settings.difficulty === 'hard') {
-            this.difficultyMultiplier = {
-                playerHealth: 0.75,
-                goldMultiplier: 0.75,
-                zombieHealth: 1.3,
-                zombieSpeed: 1.1
-            };
-        } else {
-            this.difficultyMultiplier = {
-                playerHealth: 1.0,
-                goldMultiplier: 1.0,
-                zombieHealth: 1.0,
-                zombieSpeed: 1.0
-            };
         }
     }
 }
