@@ -297,6 +297,40 @@ class TowerDefenseGame {
             this.closeStatsPanel();
         });
         
+        // Gem Shop button
+        document.getElementById('gemShopBtn').addEventListener('click', () => {
+            this.openGemShopPanel();
+        });
+        
+        document.getElementById('closeGemShop').addEventListener('click', () => {
+            this.closeGemShopPanel();
+        });
+        
+        // Gem shop purchase buttons
+        document.getElementById('buyGemDamage').addEventListener('click', () => {
+            this.buyGemUpgrade('damageMultiplier', 50);
+        });
+        
+        document.getElementById('buyGemHealth').addEventListener('click', () => {
+            this.buyGemUpgrade('healthMultiplier', 50);
+        });
+        
+        document.getElementById('buyGemGold').addEventListener('click', () => {
+            this.buyGemUpgrade('goldMultiplier', 75);
+        });
+        
+        document.getElementById('buyGemXP').addEventListener('click', () => {
+            this.buyGemUpgrade('xpMultiplier', 60);
+        });
+        
+        document.getElementById('buyGemCrit').addEventListener('click', () => {
+            this.buyGemUpgrade('critChance', 100);
+        });
+        
+        document.getElementById('buyGemRegen').addEventListener('click', () => {
+            this.buyGemUpgrade('healthRegen', 80);
+        });
+        
         // Achievements button
         document.getElementById('achievementsBtn').addEventListener('click', () => {
             console.log('Achievements button clicked!');
@@ -1191,9 +1225,14 @@ class TowerDefenseGame {
             
             // Remove dead zombies
             if (zombie.health <= 0) {
-                this.kills++;
-                this.gold += zombie.goldValue;
-                this.sessionGoldEarned += zombie.goldValue;
+                // Apply XP multiplier to kills
+                const killsGained = Math.floor(1 * (this.xpMultiplier || 1));
+                this.kills += killsGained;
+                
+                // Apply gold multiplier
+                const goldGained = Math.floor(zombie.goldValue * (this.goldMultiplier || 1));
+                this.gold += goldGained;
+                this.sessionGoldEarned += goldGained;
                 
                 // Create flying gold coin
                 const goldEl = document.getElementById('gold');
@@ -1339,15 +1378,19 @@ class TowerDefenseGame {
         // Prevent hitting the same zombie twice
         if (hitTargets.includes(target)) return;
         
+        // Check for critical strike
+        const isCrit = Math.random() < (this.critChance || 0);
+        const damageDealt = isCrit ? Math.floor(this.tower.damage * 2) : this.tower.damage;
+        
         // Deal damage to current target
-        target.health -= this.tower.damage;
+        target.health -= damageDealt;
         hitTargets.push(target);
         
         // Track damage dealt
-        this.sessionDamage += this.tower.damage;
+        this.sessionDamage += damageDealt;
         
-        // Create floating damage number
-        this.createDamageNumber(target.x, target.y - 20, this.tower.damage);
+        // Create floating damage number (yellow for crits)
+        this.createDamageNumber(target.x, target.y - 20, damageDealt, isCrit);
         
         // Create lightning effect from source to target
         this.lightning.push({
@@ -1422,13 +1465,14 @@ class TowerDefenseGame {
         }
     }
     
-    createDamageNumber(x, y, damage) {
+    createDamageNumber(x, y, damage, isCrit = false) {
         this.damageNumbers.push({
             x: x,
             y: y,
             damage: damage,
             life: 800, // How long it lasts (ms)
-            vy: -1.5 // Float upward speed
+            vy: -1.5, // Float upward speed
+            isCrit: isCrit // Mark as critical hit
         });
     }
     
@@ -1667,14 +1711,26 @@ class TowerDefenseGame {
         this.damageNumbers.forEach(dn => {
             const alpha = dn.life / 800;
             this.ctx.globalAlpha = alpha;
-            this.ctx.font = 'bold 18px Arial';
-            this.ctx.fillStyle = '#ffff00';
+            
+            // Different style for critical hits
+            if (dn.isCrit) {
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.shadowColor = '#ff0000';
+                this.ctx.shadowBlur = 10;
+            } else {
+                this.ctx.font = 'bold 18px Arial';
+                this.ctx.fillStyle = '#ffff00';
+                this.ctx.shadowBlur = 0;
+            }
+            
             this.ctx.strokeStyle = '#000';
             this.ctx.lineWidth = 3;
             this.ctx.textAlign = 'center';
-            this.ctx.strokeText(dn.damage, dn.x, dn.y);
-            this.ctx.fillText(dn.damage, dn.x, dn.y);
+            this.ctx.strokeText(dn.isCrit ? `CRIT! ${dn.damage}` : dn.damage, dn.x, dn.y);
+            this.ctx.fillText(dn.isCrit ? `CRIT! ${dn.damage}` : dn.damage, dn.x, dn.y);
             this.ctx.globalAlpha = 1;
+            this.ctx.shadowBlur = 0;
         });
         
         // Draw tower sparks
@@ -2077,6 +2133,20 @@ class TowerDefenseGame {
             this.updateImpactParticles(speedAdjustedDelta);
             this.updateGoldCoins(speedAdjustedDelta);
             this.handleContinuousShooting(currentTime);
+            
+            // Health regeneration (5 seconds = 5000ms)
+            if (!this.lastRegenTime) this.lastRegenTime = currentTime;
+            if (currentTime - this.lastRegenTime >= 5000) {
+                if (this.healthRegen && this.healthRegen > 0) {
+                    const healAmount = this.healthRegen;
+                    if (this.tower.health < this.tower.maxHealth) {
+                        this.tower.health = Math.min(this.tower.health + healAmount, this.tower.maxHealth);
+                        this.createDamageNumber(this.tower.x, this.tower.y - 50, `+${healAmount} HP`);
+                    }
+                }
+                this.lastRegenTime = currentTime;
+            }
+            
             this.updateUI();
         }
         
@@ -2299,6 +2369,15 @@ class TowerDefenseGame {
                 bonusClickDamage: 0,
                 bonusStartGold: 0,
                 gems: 0, // Premium currency
+                // Gem shop upgrades
+                gemUpgrades: {
+                    damageMultiplier: 0,
+                    healthMultiplier: 0,
+                    goldMultiplier: 0,
+                    xpMultiplier: 0,
+                    critChance: 0,
+                    healthRegen: 0
+                },
                 // Lifetime stats
                 totalDamageDealt: 0,
                 totalClicks: 0,
@@ -2324,6 +2403,18 @@ class TowerDefenseGame {
             this.permStats.gems = 0;
         }
         
+        // Add gem upgrades if not present (backward compatibility)
+        if (!this.permStats.gemUpgrades) {
+            this.permStats.gemUpgrades = {
+                damageMultiplier: 0,
+                healthMultiplier: 0,
+                goldMultiplier: 0,
+                xpMultiplier: 0,
+                critChance: 0,
+                healthRegen: 0
+            };
+        }
+        
         // NOTE: Don't call applyPermanentBonuses here - tower doesn't exist yet!
         // It will be called from init() after everything is set up
         
@@ -2347,12 +2438,33 @@ class TowerDefenseGame {
         const baseClickDamage = 5;
         const baseGold = 100;
         
-        // Apply bonuses
-        this.tower.health = baseHealth + this.permStats.bonusHealth;
-        this.tower.maxHealth = baseHealth + this.permStats.bonusHealth;
-        this.tower.damage = baseDamage + this.permStats.bonusDamage;
-        this.clickDamage = baseClickDamage + this.permStats.bonusClickDamage;
-        this.gold = baseGold + this.permStats.bonusStartGold;
+        // Apply kill-based bonuses
+        let health = baseHealth + this.permStats.bonusHealth;
+        let damage = baseDamage + this.permStats.bonusDamage;
+        let clickDamage = baseClickDamage + this.permStats.bonusClickDamage;
+        let gold = baseGold + this.permStats.bonusStartGold;
+        
+        // Apply gem shop multipliers
+        const damageMultiplier = 1 + (this.permStats.gemUpgrades.damageMultiplier * 0.1);
+        const healthMultiplier = 1 + (this.permStats.gemUpgrades.healthMultiplier * 0.1);
+        const goldMultiplier = 1 + (this.permStats.gemUpgrades.goldMultiplier * 0.2);
+        
+        damage = Math.floor(damage * damageMultiplier);
+        health = Math.floor(health * healthMultiplier);
+        gold = Math.floor(gold * goldMultiplier);
+        
+        // Set final values
+        this.tower.health = health;
+        this.tower.maxHealth = health;
+        this.tower.damage = damage;
+        this.clickDamage = clickDamage;
+        this.gold = gold;
+        
+        // Store multipliers for other systems
+        this.goldMultiplier = goldMultiplier;
+        this.xpMultiplier = 1 + (this.permStats.gemUpgrades.xpMultiplier * 0.15);
+        this.critChance = this.permStats.gemUpgrades.critChance * 0.05; // 5% per level
+        this.healthRegen = this.permStats.gemUpgrades.healthRegen; // 1 HP per 5 seconds per level
     }
     
     initSounds() {
@@ -2703,6 +2815,91 @@ class TowerDefenseGame {
     closePermUpgradesPanel() {
         document.getElementById('permUpgradesBackdrop').classList.remove('active');
         document.getElementById('permUpgradesPanel').classList.remove('active');
+    }
+    
+    // Gem Shop Functions
+    openGemShopPanel() {
+        document.getElementById('gemShopBackdrop').classList.add('active');
+        document.getElementById('gemShopPanel').classList.add('active');
+        this.updateGemShopPanel();
+    }
+    
+    closeGemShopPanel() {
+        document.getElementById('gemShopBackdrop').classList.remove('active');
+        document.getElementById('gemShopPanel').classList.remove('active');
+    }
+    
+    updateGemShopPanel() {
+        document.getElementById('shopGemsAmount').textContent = this.permStats.gems;
+        
+        // Update owned levels
+        document.getElementById('gemDamageLevel').textContent = this.permStats.gemUpgrades.damageMultiplier;
+        document.getElementById('gemHealthLevel').textContent = this.permStats.gemUpgrades.healthMultiplier;
+        document.getElementById('gemGoldLevel').textContent = this.permStats.gemUpgrades.goldMultiplier;
+        document.getElementById('gemXPLevel').textContent = this.permStats.gemUpgrades.xpMultiplier;
+        document.getElementById('gemCritLevel').textContent = this.permStats.gemUpgrades.critChance;
+        document.getElementById('gemRegenLevel').textContent = this.permStats.gemUpgrades.healthRegen;
+        
+        // Update costs (increase by 10% per level owned)
+        const baseCosts = { damageMultiplier: 50, healthMultiplier: 50, goldMultiplier: 75, xpMultiplier: 60, critChance: 100, healthRegen: 80 };
+        Object.keys(baseCosts).forEach(upgrade => {
+            const level = this.permStats.gemUpgrades[upgrade];
+            const cost = Math.floor(baseCosts[upgrade] * Math.pow(1.1, level));
+            const upgradeMap = {
+                damageMultiplier: 'gemDamageCost',
+                healthMultiplier: 'gemHealthCost',
+                goldMultiplier: 'gemGoldCost',
+                xpMultiplier: 'gemXPCost',
+                critChance: 'gemCritCost',
+                healthRegen: 'gemRegenCost'
+            };
+            document.getElementById(upgradeMap[upgrade]).textContent = cost;
+            
+            // Disable button if not enough gems
+            const btnMap = {
+                damageMultiplier: 'buyGemDamage',
+                healthMultiplier: 'buyGemHealth',
+                goldMultiplier: 'buyGemGold',
+                xpMultiplier: 'buyGemXP',
+                critChance: 'buyGemCrit',
+                healthRegen: 'buyGemRegen'
+            };
+            const btn = document.getElementById(btnMap[upgrade]);
+            if (this.permStats.gems < cost) {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
+    }
+    
+    buyGemUpgrade(upgradeType, baseCost) {
+        const level = this.permStats.gemUpgrades[upgradeType];
+        const cost = Math.floor(baseCost * Math.pow(1.1, level));
+        
+        if (this.permStats.gems >= cost) {
+            this.permStats.gems -= cost;
+            this.permStats.gemUpgrades[upgradeType]++;
+            this.savePermanentStats();
+            this.updateGemShopPanel();
+            this.updateUI();
+            this.playSound('powerUp');
+            
+            const upgradeNames = {
+                damageMultiplier: 'Damage Multiplier',
+                healthMultiplier: 'Health Multiplier',
+                goldMultiplier: 'Gold Multiplier',
+                xpMultiplier: 'XP Multiplier',
+                critChance: 'Critical Strike',
+                healthRegen: 'Health Regeneration'
+            };
+            this.showMessage(`Purchased ${upgradeNames[upgradeType]}!`, '#00ff00');
+        } else {
+            this.showMessage('Not enough gems!', '#ff4444');
+            this.playSound('error');
+        }
     }
     
     updatePermUpgradesPanel() {

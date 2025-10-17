@@ -1067,6 +1067,142 @@ body {
     }
 }
 
+/* Gem Shop Panel */
+.gem-shop-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.98);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    z-index: 500;
+    overflow-y: auto;
+}
+
+.gem-shop-panel.active {
+    display: flex;
+}
+
+.gem-shop-panel h2 {
+    color: #ff00ff;
+    font-size: 32px;
+    text-shadow: 0 0 15px #ff00ff;
+    margin-bottom: 20px;
+}
+
+.gem-shop-btn {
+    background: linear-gradient(135deg, #8b00ff, #ff00ff) !important;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.5) !important;
+    animation: gemButtonPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes gemButtonPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 0, 255, 0.8);
+    }
+}
+
+.shop-gems {
+    background: rgba(255, 0, 255, 0.1);
+    border: 2px solid #ff00ff;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+    max-width: 600px;
+}
+
+.shop-gems p {
+    color: #ff00ff;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 10px 0;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+}
+
+.shop-info {
+    color: #ff99ff !important;
+    font-size: 14px !important;
+    font-weight: normal !important;
+    text-shadow: none !important;
+}
+
+.shop-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.shop-item {
+    background: linear-gradient(135deg, rgba(139, 0, 255, 0.2), rgba(255, 0, 255, 0.2));
+    border: 3px solid #ff00ff;
+    border-radius: 15px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.shop-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
+    border-color: #ffff00;
+}
+
+.shop-item:active {
+    transform: scale(0.98);
+}
+
+.shop-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.8));
+}
+
+.shop-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff00ff;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+}
+
+.shop-desc {
+    font-size: 14px;
+    color: #ff99ff;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.shop-level {
+    font-size: 14px;
+    color: #ffff00;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.shop-cost {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ffff;
+    padding: 8px 15px;
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: 10px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
 /* Permanent Upgrades Panel */
 .perm-upgrades-panel {
     position: fixed;

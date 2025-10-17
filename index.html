@@ -116,6 +116,7 @@
                     <button class="menu-btn" id="saveGameBtn">SAVE GAME</button>
                     <button class="menu-btn" id="loadGameBtn">LOAD GAME</button>
                     <button class="menu-btn" id="settingsBtn">⚙️ SETTINGS</button>
+                    <button class="menu-btn gem-shop-btn" id="gemShopBtn">💎 GEM SHOP</button>
                     <button class="menu-btn" id="permUpgradesBtn">PERMANENT UPGRADES</button>
                     <button class="menu-btn" id="statsBtn">STATISTICS</button>
                     <button class="menu-btn" id="achievementsBtn">ACHIEVEMENTS</button>
@@ -255,6 +256,68 @@
                 <p>Zombies Killed: <span id="finalKills">0</span></p>
             </div>
             <button class="restart-btn" id="restartBtn">🔄 TRY AGAIN</button>
+        </div>
+
+        <!-- Gem Shop Panel -->
+        <div class="panel-backdrop" id="gemShopBackdrop"></div>
+        <div class="gem-shop-panel" id="gemShopPanel">
+            <h2>💎 GEM SHOP</h2>
+            <div class="upgrade-close" id="closeGemShop">✕</div>
+            
+            <div class="shop-gems">
+                <p>💎 Your Gems: <span id="shopGemsAmount">0</span></p>
+                <p class="shop-info">Purchase powerful permanent buffs with gems earned from achievements!</p>
+            </div>
+            
+            <div class="shop-items">
+                <button class="shop-item" id="buyGemDamage">
+                    <div class="shop-icon">⚔️</div>
+                    <div class="shop-name">Damage Multiplier</div>
+                    <div class="shop-desc">+10% tower damage (stacks)</div>
+                    <div class="shop-level">Owned: <span id="gemDamageLevel">0</span></div>
+                    <div class="shop-cost">💎 <span id="gemDamageCost">50</span> gems</div>
+                </button>
+
+                <button class="shop-item" id="buyGemHealth">
+                    <div class="shop-icon">❤️</div>
+                    <div class="shop-name">Health Multiplier</div>
+                    <div class="shop-desc">+10% max health (stacks)</div>
+                    <div class="shop-level">Owned: <span id="gemHealthLevel">0</span></div>
+                    <div class="shop-cost">💎 <span id="gemHealthCost">50</span> gems</div>
+                </button>
+
+                <button class="shop-item" id="buyGemGold">
+                    <div class="shop-icon">💰</div>
+                    <div class="shop-name">Gold Multiplier</div>
+                    <div class="shop-desc">+20% gold earned (stacks)</div>
+                    <div class="shop-level">Owned: <span id="gemGoldLevel">0</span></div>
+                    <div class="shop-cost">💎 <span id="gemGoldCost">75</span> gems</div>
+                </button>
+
+                <button class="shop-item" id="buyGemXP">
+                    <div class="shop-icon">⭐</div>
+                    <div class="shop-name">XP Multiplier</div>
+                    <div class="shop-desc">+15% kill rewards (stacks)</div>
+                    <div class="shop-level">Owned: <span id="gemXPLevel">0</span></div>
+                    <div class="shop-cost">💎 <span id="gemXPCost">60</span> gems</div>
+                </button>
+
+                <button class="shop-item" id="buyGemCrit">
+                    <div class="shop-icon">💥</div>
+                    <div class="shop-name">Critical Strike</div>
+                    <div class="shop-desc">+5% crit chance (stacks)</div>
+                    <div class="shop-level">Owned: <span id="gemCritLevel">0</span></div>
+                    <div class="shop-cost">💎 <span id="gemCritCost">100</span> gems</div>
+                </button>
+
+                <button class="shop-item" id="buyGemRegen">
+                    <div class="shop-icon">💚</div>
+                    <div class="shop-name">Health Regeneration</div>
+                    <div class="shop-desc">+1 HP per 5 seconds (stacks)</div>
+                    <div class="shop-level">Owned: <span id="gemRegenLevel">0</span></div>
+                    <div class="shop-cost">💎 <span id="gemRegenCost">80</span> gems</div>
+                </button>
+            </div>
         </div>
 
         <!-- Permanent Upgrades Panel -->
