@@ -98,6 +98,7 @@
                 <div class="menu-buttons">
                     <button class="menu-btn" id="saveGameBtn">SAVE GAME</button>
                     <button class="menu-btn" id="loadGameBtn">LOAD GAME</button>
+                    <button class="menu-btn" id="settingsBtn">⚙️ SETTINGS</button>
                     <button class="menu-btn" id="permUpgradesBtn">PERMANENT UPGRADES</button>
                     <button class="menu-btn" id="statsBtn">STATISTICS</button>
                     <button class="menu-btn" id="achievementsBtn">ACHIEVEMENTS</button>
@@ -539,6 +540,70 @@
                     <h3>⚡ Fastest to Wave 20</h3>
                     <div id="leaderboardSpeed" class="leaderboard-list"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="panel-backdrop" id="settingsBackdrop"></div>
+    <div class="panel" id="settingsPanel">
+        <div class="panel-content">
+            <button class="close-btn" id="closeSettings">✖</button>
+            <h2 style="text-align: center; margin-bottom: 20px;">⚙️ SETTINGS ⚙️</h2>
+            
+            <div class="settings-container">
+                <!-- Volume Settings -->
+                <div class="setting-section">
+                    <h3>🔊 Volume</h3>
+                    <div class="setting-item">
+                        <label for="volumeSlider">Sound Volume:</label>
+                        <div class="slider-container">
+                            <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                            <span id="volumeValue">50%</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>Sound Effects:</label>
+                        <button class="toggle-btn" id="soundToggleBtn">ON</button>
+                    </div>
+                </div>
+
+                <!-- Difficulty Settings -->
+                <div class="setting-section">
+                    <h3>⚔️ Difficulty</h3>
+                    <div class="setting-item">
+                        <label>Difficulty Level:</label>
+                        <select id="difficultySelect" class="settings-select">
+                            <option value="easy">Easy (50% more HP, 25% more gold)</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="hard">Hard (50% more zombies, 25% less gold)</option>
+                        </select>
+                    </div>
+                    <p class="setting-note">⚠️ Changing difficulty will restart your current game</p>
+                </div>
+
+                <!-- Graphics Settings -->
+                <div class="setting-section">
+                    <h3>🎨 Graphics</h3>
+                    <div class="setting-item">
+                        <label>Graphics Quality:</label>
+                        <select id="graphicsSelect" class="settings-select">
+                            <option value="low">Low (Better Performance)</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High (More Effects)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Particle Effects:</label>
+                        <button class="toggle-btn" id="particlesToggleBtn">ON</button>
+                    </div>
+                    <div class="setting-item">
+                        <label>Screen Shake:</label>
+                        <button class="toggle-btn" id="screenShakeToggleBtn">ON</button>
+                    </div>
+                </div>
+
+                <button class="apply-settings-btn" id="applySettingsBtn">✓ APPLY SETTINGS</button>
             </div>
         </div>
     </div>

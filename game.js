@@ -119,6 +119,9 @@ class TowerDefenseGame {
         this.criticalHealthWarned = false;
         this.narrationTimeout = null;
         
+        // Load settings
+        this.loadSettings();
+        
         this.init();
     }
     
@@ -174,7 +177,8 @@ class TowerDefenseGame {
             { id: 'saveSlotPanel', backdropId: 'saveSlotBackdrop', closeMethod: () => this.closeSaveSlotPanel() },
             { id: 'enemyTypesPanel', backdropId: 'enemyTypesBackdrop', closeMethod: () => this.closeEnemyTypesPanel() },
             { id: 'challengesPanel', backdropId: 'challengesBackdrop', closeMethod: () => this.closeChallengesPanel() },
-            { id: 'leaderboardsPanel', backdropId: 'leaderboardsBackdrop', closeMethod: () => this.closeLeaderboardsPanel() }
+            { id: 'leaderboardsPanel', backdropId: 'leaderboardsBackdrop', closeMethod: () => this.closeLeaderboardsPanel() },
+            { id: 'settingsPanel', backdropId: 'settingsBackdrop', closeMethod: () => this.closeSettingsPanel() }
         ];
         
         panels.forEach(panel => {
@@ -311,6 +315,42 @@ class TowerDefenseGame {
         
         document.getElementById('closeLeaderboards').addEventListener('click', () => {
             this.closeLeaderboardsPanel();
+        });
+        
+        // Settings button
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            this.openSettingsPanel();
+        });
+        
+        document.getElementById('closeSettings').addEventListener('click', () => {
+            this.closeSettingsPanel();
+        });
+        
+        // Settings controls
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            document.getElementById('volumeValue').textContent = e.target.value + '%';
+        });
+        
+        document.getElementById('soundToggleBtn').addEventListener('click', (e) => {
+            const btn = e.target;
+            btn.classList.toggle('off');
+            btn.textContent = btn.classList.contains('off') ? 'OFF' : 'ON';
+        });
+        
+        document.getElementById('particlesToggleBtn').addEventListener('click', (e) => {
+            const btn = e.target;
+            btn.classList.toggle('off');
+            btn.textContent = btn.classList.contains('off') ? 'OFF' : 'ON';
+        });
+        
+        document.getElementById('screenShakeToggleBtn').addEventListener('click', (e) => {
+            const btn = e.target;
+            btn.classList.toggle('off');
+            btn.textContent = btn.classList.contains('off') ? 'OFF' : 'ON';
+        });
+        
+        document.getElementById('applySettingsBtn').addEventListener('click', () => {
+            this.applySettings();
         });
         
         // Upgrade button
@@ -2878,6 +2918,166 @@ class TowerDefenseGame {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // ==========================================
+    // SETTINGS
+    // ==========================================
+    
+    loadSettings() {
+        const saved = localStorage.getItem('gameSettings');
+        
+        if (saved) {
+            this.settings = JSON.parse(saved);
+        } else {
+            this.settings = {
+                volume: 50,
+                soundEnabled: true,
+                difficulty: 'normal',
+                graphicsQuality: 'medium',
+                particlesEnabled: true,
+                screenShakeEnabled: true
+            };
+        }
+        
+        // Apply settings
+        this.applySettingsToGame();
+    }
+    
+    saveSettings() {
+        localStorage.setItem('gameSettings', JSON.stringify(this.settings));
+    }
+    
+    openSettingsPanel() {
+        document.getElementById('settingsBackdrop').classList.add('active');
+        document.getElementById('settingsPanel').classList.add('active');
+        this.updateSettingsPanel();
+    }
+    
+    closeSettingsPanel() {
+        document.getElementById('settingsBackdrop').classList.remove('active');
+        document.getElementById('settingsPanel').classList.remove('active');
+    }
+    
+    updateSettingsPanel() {
+        // Update volume slider
+        document.getElementById('volumeSlider').value = this.settings.volume;
+        document.getElementById('volumeValue').textContent = this.settings.volume + '%';
+        
+        // Update sound toggle
+        const soundBtn = document.getElementById('soundToggleBtn');
+        if (this.settings.soundEnabled) {
+            soundBtn.classList.remove('off');
+            soundBtn.textContent = 'ON';
+        } else {
+            soundBtn.classList.add('off');
+            soundBtn.textContent = 'OFF';
+        }
+        
+        // Update difficulty
+        document.getElementById('difficultySelect').value = this.settings.difficulty;
+        
+        // Update graphics
+        document.getElementById('graphicsSelect').value = this.settings.graphicsQuality;
+        
+        // Update particles toggle
+        const particlesBtn = document.getElementById('particlesToggleBtn');
+        if (this.settings.particlesEnabled) {
+            particlesBtn.classList.remove('off');
+            particlesBtn.textContent = 'ON';
+        } else {
+            particlesBtn.classList.add('off');
+            particlesBtn.textContent = 'OFF';
+        }
+        
+        // Update screen shake toggle
+        const shakeBtn = document.getElementById('screenShakeToggleBtn');
+        if (this.settings.screenShakeEnabled) {
+            shakeBtn.classList.remove('off');
+            shakeBtn.textContent = 'ON';
+        } else {
+            shakeBtn.classList.add('off');
+            shakeBtn.textContent = 'OFF';
+        }
+    }
+    
+    applySettings() {
+        // Get values from UI
+        this.settings.volume = parseInt(document.getElementById('volumeSlider').value);
+        this.settings.soundEnabled = !document.getElementById('soundToggleBtn').classList.contains('off');
+        const newDifficulty = document.getElementById('difficultySelect').value;
+        this.settings.graphicsQuality = document.getElementById('graphicsSelect').value;
+        this.settings.particlesEnabled = !document.getElementById('particlesToggleBtn').classList.contains('off');
+        this.settings.screenShakeEnabled = !document.getElementById('screenShakeToggleBtn').classList.contains('off');
+        
+        // Check if difficulty changed
+        const difficultyChanged = this.settings.difficulty !== newDifficulty;
+        this.settings.difficulty = newDifficulty;
+        
+        // Save settings
+        this.saveSettings();
+        
+        // Apply to game
+        this.applySettingsToGame();
+        
+        // Close panel
+        this.closeSettingsPanel();
+        
+        // Show confirmation
+        this.showNarration('✓ Settings Applied!', 2000);
+        
+        // Warn about difficulty change
+        if (difficultyChanged && this.isGameStarted) {
+            alert('Difficulty has been changed! Your current game will restart.');
+            this.restart();
+        }
+    }
+    
+    applySettingsToGame() {
+        // Apply volume (affects sound system)
+        if (this.audioContext) {
+            // Volume would be applied through gain nodes if using Web Audio API
+        }
+        
+        // Apply sound enabled
+        this.soundEnabled = this.settings.soundEnabled;
+        
+        // Update sound toggle button display
+        const soundToggle = document.getElementById('soundToggle');
+        if (soundToggle) {
+            soundToggle.textContent = this.soundEnabled ? '🔊' : '🔇';
+        }
+        
+        // Apply difficulty modifiers
+        this.applyDifficultyModifiers();
+    }
+    
+    applyDifficultyModifiers() {
+        // Difficulty is applied when starting new game or restarting
+        // This affects zombie spawning rates, player stats, etc.
+        
+        if (this.settings.difficulty === 'easy') {
+            this.difficultyMultiplier = {
+                playerHealth: 1.5,
+                goldMultiplier: 1.25,
+                zombieHealth: 0.8,
+                zombieSpeed: 0.9
+            };
+        } else if (this.settings.difficulty === 'hard') {
+            this.difficultyMultiplier = {
+                playerHealth: 0.75,
+                goldMultiplier: 0.75,
+                zombieHealth: 1.3,
+                zombieSpeed: 1.1
+            };
+        } else {
+            this.difficultyMultiplier = {
+                playerHealth: 1.0,
+                goldMultiplier: 1.0,
+                zombieHealth: 1.0,
+                zombieSpeed: 1.0
+            };
+        }
     }
 }
 

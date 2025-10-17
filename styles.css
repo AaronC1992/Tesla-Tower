@@ -1310,7 +1310,8 @@ body {
 #saveSlotBackdrop,
 #enemyTypesBackdrop,
 #challengesBackdrop,
-#leaderboardsBackdrop {
+#leaderboardsBackdrop,
+#settingsBackdrop {
     z-index: 10001; /* Above title screen (10000) */
 }
 
@@ -1695,6 +1696,150 @@ body {
     color: #888;
     font-size: 12px;
     margin-left: 10px;
+}
+
+/* Settings Panel Styles */
+.settings-container {
+    padding: 10px 0;
+}
+
+.setting-section {
+    background: rgba(0, 255, 255, 0.05);
+    border: 2px solid rgba(0, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.setting-section h3 {
+    color: #00ffff;
+    font-size: 20px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px #00ffff;
+    text-align: center;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.setting-item label {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#volumeSlider {
+    width: 150px;
+    height: 6px;
+    border-radius: 5px;
+    background: rgba(0, 255, 255, 0.2);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+#volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #00ffff;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ffff;
+}
+
+#volumeSlider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #00ffff;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ffff;
+}
+
+#volumeValue {
+    color: #00ffff;
+    font-weight: bold;
+    min-width: 40px;
+}
+
+.toggle-btn {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+    border: 2px solid #00ffff;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 70px;
+}
+
+.toggle-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.toggle-btn.off {
+    background: linear-gradient(135deg, #666, #999);
+    border-color: #ff4444;
+}
+
+.settings-select {
+    background: rgba(0, 0, 0, 0.5);
+    color: #00ffff;
+    border: 2px solid #00ffff;
+    padding: 8px 15px;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    outline: none;
+}
+
+.settings-select option {
+    background: #1a1a2e;
+    color: #00ffff;
+}
+
+.setting-note {
+    color: #ffaa00;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+.apply-settings-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+    border: 3px solid #00ffff;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.apply-settings-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
 }
 
 /* Title Screen Styles */
