@@ -2685,7 +2685,12 @@ class TowerDefenseGame {
         
         if (!theme || !theme.requirement) return true;
         
-        // Check if achievement requirement is met
+        // Special case: check if all achievements are unlocked
+        if (theme.requirement === 'allAchievements') {
+            return this.achievements.every(a => a.unlocked);
+        }
+        
+        // Check if specific achievement requirement is met
         const achievement = this.achievements.find(a => a.id === theme.requirement);
         return achievement && achievement.unlocked;
     }
@@ -2705,14 +2710,18 @@ class TowerDefenseGame {
             return false;
         }
         
-        // Check gem cost
-        if (this.permStats.gems < theme.cost) {
-            this.showMessage(`Not enough gems! Need ${theme.cost}`, '#ff0000');
-            return false;
+        // Classic theme is always unlocked, others require achievements
+        if (theme.requirement) {
+            if (!this.checkThemeUnlock(themeKey)) {
+                // Find achievement name for better message
+                const achievement = this.achievements.find(a => a.id === theme.requirement);
+                const achName = achievement ? achievement.name : 'required achievement';
+                this.showMessage(`Complete "${achName}" to unlock this theme!`, '#ff0000');
+                return false;
+            }
         }
         
-        // Purchase theme (no achievement requirement needed, just gems)
-        this.permStats.gems -= theme.cost;
+        // Unlock theme (no gem cost!)
         this.permStats.themes.unlocked.push(themeKey);
         this.savePermanentStats();
         
@@ -2916,9 +2925,9 @@ class TowerDefenseGame {
             },
             darkPurple: {
                 name: 'Dark Purple',
-                description: 'Mystical purple energy',
-                cost: 50,
-                requirement: 'wave5',
+                description: 'Mystical purple energy (Unlock: Reach wave 5)',
+                cost: 0,
+                requirement: 'wave_5',
                 colors: {
                     primary: '#9d4edd',
                     secondary: '#c77dff',
@@ -2934,9 +2943,9 @@ class TowerDefenseGame {
             },
             oceanBlue: {
                 name: 'Ocean Blue',
-                description: 'Deep sea currents',
-                cost: 75,
-                requirement: 'wave10',
+                description: 'Deep sea currents (Unlock: Reach wave 10)',
+                cost: 0,
+                requirement: 'wave_10',
                 colors: {
                     primary: '#0077b6',
                     secondary: '#00b4d8',
@@ -2952,9 +2961,9 @@ class TowerDefenseGame {
             },
             forestGreen: {
                 name: 'Forest Green',
-                description: 'Nature\'s power',
-                cost: 100,
-                requirement: 'wave20',
+                description: 'Nature\'s power (Unlock: Reach wave 20)',
+                cost: 0,
+                requirement: 'wave_20',
                 colors: {
                     primary: '#2d6a4f',
                     secondary: '#52b788',
@@ -2970,9 +2979,9 @@ class TowerDefenseGame {
             },
             sunsetOrange: {
                 name: 'Sunset Orange',
-                description: 'Blazing fire energy',
-                cost: 125,
-                requirement: 'killStreak100',
+                description: 'Blazing fire energy (Unlock: Kill 100 zombies)',
+                cost: 0,
+                requirement: 'kills_100',
                 colors: {
                     primary: '#ff6d00',
                     secondary: '#ff9e00',
@@ -2988,9 +2997,9 @@ class TowerDefenseGame {
             },
             neonPink: {
                 name: 'Neon Pink',
-                description: 'Cyberpunk vibes',
-                cost: 150,
-                requirement: 'perfectWave',
+                description: 'Cyberpunk vibes (Unlock: Deal 10,000 damage)',
+                cost: 0,
+                requirement: 'damage_10000',
                 colors: {
                     primary: '#ff006e',
                     secondary: '#ff0a54',
@@ -3006,8 +3015,8 @@ class TowerDefenseGame {
             },
             goldenRoyal: {
                 name: 'Golden Royal',
-                description: 'Luxurious gold and purple',
-                cost: 200,
+                description: 'Luxurious gold and purple (Unlock: Get all achievements)',
+                cost: 0,
                 requirement: 'allAchievements',
                 colors: {
                     primary: '#ffd700',
@@ -3552,7 +3561,6 @@ class TowerDefenseGame {
         Object.entries(themes).forEach(([key, theme]) => {
             const isUnlocked = unlockedThemes.includes(key);
             const isCurrent = currentTheme === key;
-            const hasEnoughGems = this.permStats.gems >= theme.cost;
             const canUnlock = this.checkThemeUnlock(key);
             
             const themeCard = document.createElement('div');
@@ -3560,13 +3568,15 @@ class TowerDefenseGame {
             if (isCurrent) themeCard.classList.add('current');
             if (!isUnlocked) themeCard.classList.add('locked');
             
-            // Get requirement text (informational only)
+            // Get requirement text
             let requirementText = '';
             if (!isUnlocked && theme.requirement) {
                 const achievement = this.achievements.find(a => a.id === theme.requirement);
-                requirementText = achievement ? `<div class="theme-requirement ${canUnlock ? 'met' : 'unmet'}">
-                    ${canUnlock ? '✓ Bonus: ' : '🎯 Unlock via: '}${achievement.name}
-                </div>` : '';
+                if (achievement) {
+                    requirementText = `<div class="theme-requirement ${canUnlock ? 'met' : 'unmet'}">
+                        ${canUnlock ? '✓ Unlocked!' : '🔒 ' + achievement.name}
+                    </div>`;
+                }
             }
             
             themeCard.innerHTML = `
@@ -3581,9 +3591,8 @@ class TowerDefenseGame {
                 <div class="theme-desc">${theme.description}</div>
                 ${requirementText}
                 ${isCurrent ? '<div class="theme-current">✓ ACTIVE</div>' : ''}
-                ${!isUnlocked ? `<div class="theme-cost">💎 ${theme.cost} gems</div>` : ''}
                 ${isUnlocked && !isCurrent ? '<button class="theme-apply-btn">APPLY</button>' : ''}
-                ${!isUnlocked ? `<button class="theme-unlock-btn" ${!hasEnoughGems ? 'disabled' : ''}>UNLOCK</button>` : ''}
+                ${!isUnlocked ? `<button class="theme-unlock-btn" ${!canUnlock ? 'disabled' : ''}>${canUnlock ? 'UNLOCK' : 'LOCKED'}</button>` : ''}
             `;
             
             // Add click handlers
