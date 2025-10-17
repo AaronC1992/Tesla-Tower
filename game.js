@@ -635,6 +635,11 @@ class TowerDefenseGame {
                 this.playSound('achievement');
                 console.log('Cheat activated: +500 gems');
             }
+            // Test voice with 'V' key
+            if (e.key === 'v' || e.key === 'V') {
+                console.log('Voice test triggered');
+                this.speak('Voice test. Tower Defense Game. Critical Health Warning!', { rate: 1.0, pitch: 1.0, volume: 1.0 });
+            }
         });
     }
     
@@ -2733,14 +2738,21 @@ class TowerDefenseGame {
         if ('speechSynthesis' in window) {
             this.ttsEnabled = localStorage.getItem('ttsEnabled') !== 'false';
             this.ttsVoice = null;
+            console.log('TTS initialized. Enabled:', this.ttsEnabled);
             
             // Load voices when they become available
             const loadVoices = () => {
                 const voices = speechSynthesis.getVoices();
+                console.log('Available voices:', voices.length);
                 // Try to find a good English voice
                 this.ttsVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
                                voices.find(v => v.lang.startsWith('en')) ||
                                voices[0];
+                if (this.ttsVoice) {
+                    console.log('Selected voice:', this.ttsVoice.name, this.ttsVoice.lang);
+                } else {
+                    console.warn('No voice selected');
+                }
             };
             
             // Some browsers load voices asynchronously
@@ -2756,7 +2768,18 @@ class TowerDefenseGame {
     }
     
     speak(text, options = {}) {
-        if (!this.ttsEnabled || !this.soundEnabled) return;
+        // Check if TTS is available and enabled
+        if (!('speechSynthesis' in window)) {
+            console.warn('Speech Synthesis not supported');
+            return;
+        }
+        
+        if (!this.ttsEnabled) {
+            console.log('TTS disabled by user');
+            return;
+        }
+        
+        console.log('🗣️ Speaking:', text);
         
         // Cancel any ongoing speech
         speechSynthesis.cancel();
@@ -2773,8 +2796,25 @@ class TowerDefenseGame {
         utterance.pitch = options.pitch || 1.0; // Pitch (0 to 2)
         utterance.volume = options.volume || 1.0; // Volume (0 to 1)
         
+        // Add error handling
+        utterance.onerror = (event) => {
+            console.error('Speech error:', event);
+        };
+        
+        utterance.onstart = () => {
+            console.log('Speech started');
+        };
+        
+        utterance.onend = () => {
+            console.log('Speech ended');
+        };
+        
         // Speak
-        speechSynthesis.speak(utterance);
+        try {
+            speechSynthesis.speak(utterance);
+        } catch (error) {
+            console.error('Error speaking:', error);
+        }
     }
     
     toggleTTS() {
