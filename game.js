@@ -401,6 +401,12 @@ class TowerDefenseGame {
             btn.textContent = btn.classList.contains('off') ? 'OFF' : 'ON';
         });
         
+        document.getElementById('voiceToggleBtn').addEventListener('click', (e) => {
+            const btn = e.target;
+            btn.classList.toggle('off');
+            btn.textContent = btn.classList.contains('off') ? 'OFF' : 'ON';
+        });
+        
         document.getElementById('particlesToggleBtn').addEventListener('click', (e) => {
             const btn = e.target;
             btn.classList.toggle('off');
@@ -1830,6 +1836,20 @@ class TowerDefenseGame {
         // Play sound effect
         this.playSound('powerUp');
         
+        // Speak the narration (remove emojis for cleaner speech)
+        const cleanText = text.replace(/[⚡💀⚠️🏆✓]/g, '').trim();
+        
+        // Adjust speech based on message type
+        if (text.includes('BOSS')) {
+            this.speak(cleanText, { rate: 0.9, pitch: 0.8, volume: 1.0 }); // Slower, deeper
+        } else if (text.includes('CRITICAL')) {
+            this.speak(cleanText, { rate: 1.2, pitch: 1.3, volume: 1.0 }); // Faster, higher pitch for urgency
+        } else if (text.includes('ACHIEVEMENT')) {
+            this.speak(cleanText, { rate: 1.0, pitch: 1.2, volume: 1.0 }); // Slightly higher pitch for celebration
+        } else {
+            this.speak(cleanText, { rate: 1.0, pitch: 1.0, volume: 1.0 }); // Normal
+        }
+        
         // Hide after duration
         this.narrationTimeout = setTimeout(() => {
             narrationEl.classList.remove('show');
@@ -2703,6 +2723,68 @@ class TowerDefenseGame {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
         }, { once: true });
+        
+        // Initialize Text-to-Speech
+        this.initTTS();
+    }
+    
+    initTTS() {
+        // Check if browser supports speech synthesis
+        if ('speechSynthesis' in window) {
+            this.ttsEnabled = localStorage.getItem('ttsEnabled') !== 'false';
+            this.ttsVoice = null;
+            
+            // Load voices when they become available
+            const loadVoices = () => {
+                const voices = speechSynthesis.getVoices();
+                // Try to find a good English voice
+                this.ttsVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+                               voices.find(v => v.lang.startsWith('en')) ||
+                               voices[0];
+            };
+            
+            // Some browsers load voices asynchronously
+            if (speechSynthesis.getVoices().length > 0) {
+                loadVoices();
+            } else {
+                speechSynthesis.addEventListener('voiceschanged', loadVoices);
+            }
+        } else {
+            this.ttsEnabled = false;
+            console.warn('Text-to-Speech not supported in this browser');
+        }
+    }
+    
+    speak(text, options = {}) {
+        if (!this.ttsEnabled || !this.soundEnabled) return;
+        
+        // Cancel any ongoing speech
+        speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Set voice if available
+        if (this.ttsVoice) {
+            utterance.voice = this.ttsVoice;
+        }
+        
+        // Configure speech parameters
+        utterance.rate = options.rate || 1.0; // Speed (0.1 to 10)
+        utterance.pitch = options.pitch || 1.0; // Pitch (0 to 2)
+        utterance.volume = options.volume || 1.0; // Volume (0 to 1)
+        
+        // Speak
+        speechSynthesis.speak(utterance);
+    }
+    
+    toggleTTS() {
+        this.ttsEnabled = !this.ttsEnabled;
+        localStorage.setItem('ttsEnabled', this.ttsEnabled);
+        this.showMessage(this.ttsEnabled ? 'Voice ON 🗣️' : 'Voice OFF 🔇', this.ttsEnabled ? '#00ff00' : '#ff0000');
+        
+        if (this.ttsEnabled) {
+            this.speak('Voice announcements enabled');
+        }
     }
     
     toggleSound() {
@@ -3132,6 +3214,9 @@ class TowerDefenseGame {
         
         // Show narration
         this.showNarration('🏆 ACHIEVEMENT UNLOCKED! 🏆', 3000);
+        
+        // Speak achievement name with excitement
+        this.speak(`Achievement unlocked! ${achievement.name}`, { rate: 1.0, pitch: 1.2, volume: 1.0 });
         
         const gemReward = achievement.gemReward || 0;
         const popup = document.createElement('div');
@@ -3947,6 +4032,16 @@ class TowerDefenseGame {
             soundBtn.textContent = 'OFF';
         }
         
+        // Update voice toggle
+        const voiceBtn = document.getElementById('voiceToggleBtn');
+        if (this.ttsEnabled) {
+            voiceBtn.classList.remove('off');
+            voiceBtn.textContent = 'ON';
+        } else {
+            voiceBtn.classList.add('off');
+            voiceBtn.textContent = 'OFF';
+        }
+        
         // Update graphics
         document.getElementById('graphicsSelect').value = this.settings.graphicsQuality;
         
@@ -3975,11 +4070,13 @@ class TowerDefenseGame {
         // Get values from UI
         this.settings.volume = parseInt(document.getElementById('volumeSlider').value);
         this.settings.soundEnabled = !document.getElementById('soundToggleBtn').classList.contains('off');
+        this.ttsEnabled = !document.getElementById('voiceToggleBtn').classList.contains('off');
         this.settings.graphicsQuality = document.getElementById('graphicsSelect').value;
         this.settings.particlesEnabled = !document.getElementById('particlesToggleBtn').classList.contains('off');
         this.settings.screenShakeEnabled = !document.getElementById('screenShakeToggleBtn').classList.contains('off');
         
         // Save settings
+        localStorage.setItem('ttsEnabled', this.ttsEnabled);
         this.saveSettings();
         
         // Apply to game
