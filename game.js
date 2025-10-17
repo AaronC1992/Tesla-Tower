@@ -51,8 +51,8 @@ class TowerDefenseGame {
             health: 100,
             maxHealth: 100,
             level: 1,
-            damage: 10,
-            range: 150,
+            damage: 7, // Reduced from 10 to 7 for harder difficulty
+            range: 120, // Reduced from 150 to 120 for harder difficulty
             fireRate: 1000, // milliseconds
             lastFire: 0,
             maxTargets: 1, // Start with single target
@@ -118,6 +118,8 @@ class TowerDefenseGame {
         this.zombiesPerWave = 5;
         this.zombiesSpawned = 0;
         this.bossSpawned = false; // Track if boss spawned this wave
+        this.currentWaveTheme = null; // Theme for current wave (null = mixed, or specific type)
+        this.splitBossSpawned = false; // Track if split boss spawned
         
         // Narration tracking
         this.criticalHealthWarned = false;
@@ -682,6 +684,8 @@ class TowerDefenseGame {
         this.lastSpawn = performance.now(); // Initialize spawn timer
         this.runStartTime = Date.now(); // Start run timer
         this.criticalHealthWarned = false; // Reset health warning
+        this.currentWaveTheme = null; // Reset themed waves
+        this.splitBossSpawned = false; // Reset split boss flag
         
         // Show daily challenges
         console.log('=== DAILY CHALLENGES ===');
@@ -1044,6 +1048,10 @@ class TowerDefenseGame {
         const isBossWave = this.wave % 5 === 0;
         const spawnBoss = isBossWave && !this.bossSpawned;
         
+        // Check if this is a split boss wave (every 10 waves)
+        const isSplitBossWave = this.wave % 10 === 0;
+        const spawnSplitBoss = isSplitBossWave && !this.splitBossSpawned && this.bossSpawned;
+        
         // Spawn from random edge
         const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
         let x, y;
@@ -1068,8 +1076,37 @@ class TowerDefenseGame {
         }
         
         let zombie;
+        let isElite = false;
         
-        if (spawnBoss) {
+        // Check for elite zombie spawn (10% chance starting at wave 10)
+        if (this.wave >= 10 && Math.random() < 0.1 && !spawnBoss && !spawnSplitBoss) {
+            isElite = true;
+        }
+        
+        if (spawnSplitBoss) {
+            // Split Boss Zombie - Splits into 2 mini-bosses on death!
+            zombie = {
+                x: x,
+                y: y,
+                type: 'splitboss',
+                radius: 35,
+                health: 150 + this.wave * 25,
+                maxHealth: 150 + this.wave * 25,
+                speed: 0.35,
+                goldValue: 150 + this.wave * 15,
+                lastDamageTime: 0,
+                damageRate: 900,
+                damage: 3,
+                color: '#ff00ff',
+                emoji: '👹',
+                isBoss: true,
+                isSplitBoss: true
+            };
+            this.splitBossSpawned = true;
+            this.playSound('boss');
+            this.showMessage('💀 SPLIT BOSS INCOMING! 💀', '#ff00ff');
+            this.showNarration('👹 BEWARE THE SPLIT BOSS! 👹', 3000);
+        } else if (spawnBoss) {
             // Boss Zombie
             zombie = {
                 x: x,
@@ -1092,22 +1129,29 @@ class TowerDefenseGame {
             this.showMessage('💀 BOSS ZOMBIE INCOMING! 💀', '#ff0000');
             this.showNarration('💀 BOSS APPROACHING! 💀', 3000);
         } else {
-            // Determine zombie type based on wave and random chance
-            const rand = Math.random();
+            // Determine zombie type - use themed wave if set, otherwise random
             let zombieType;
             
-            if (this.wave >= 15 && rand < 0.15) {
-                zombieType = 'exploder';
-            } else if (this.wave >= 12 && rand < 0.2) {
-                zombieType = 'spawner';
-            } else if (this.wave >= 10 && rand < 0.3) {
-                zombieType = 'tank';
-            } else if (this.wave >= 7 && rand < 0.4) {
-                zombieType = 'runner';
-            } else if (this.wave >= 3 && rand < 0.55) {
-                zombieType = 'strong';
+            if (this.currentWaveTheme) {
+                // Themed wave - spawn only this type
+                zombieType = this.currentWaveTheme;
             } else {
-                zombieType = 'normal';
+                // Random/mixed wave - determine based on wave and random chance
+                const rand = Math.random();
+                
+                if (this.wave >= 15 && rand < 0.15) {
+                    zombieType = 'exploder';
+                } else if (this.wave >= 12 && rand < 0.2) {
+                    zombieType = 'spawner';
+                } else if (this.wave >= 10 && rand < 0.3) {
+                    zombieType = 'tank';
+                } else if (this.wave >= 7 && rand < 0.4) {
+                    zombieType = 'runner';
+                } else if (this.wave >= 3 && rand < 0.55) {
+                    zombieType = 'strong';
+                } else {
+                    zombieType = 'normal';
+                }
             }
             
             // Create zombie based on type
@@ -1234,9 +1278,40 @@ class TowerDefenseGame {
                     };
                     break;
             }
+            
+            // Apply ELITE modifications if this is an elite zombie
+            if (isElite) {
+                zombie.isElite = true;
+                zombie.health *= 2; // 2x health
+                zombie.maxHealth *= 2;
+                zombie.damage = Math.floor(zombie.damage * 1.5); // 1.5x damage
+                zombie.goldValue *= 3; // 3x gold reward!
+                zombie.radius += 3; // Slightly larger
+                
+                // Add special glow color effect (brighter version of base color)
+                zombie.glowColor = this.brightenColor(zombie.color);
+                
+                // Add elite indicator to emoji
+                zombie.emoji = '⭐' + zombie.emoji;
+            }
         }
         
         this.zombies.push(zombie);
+    }
+    
+    // Helper function to brighten colors for elite zombies
+    brightenColor(hexColor) {
+        // Convert hex to RGB, brighten, and return
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
+        
+        // Brighten by adding 60 to each component (max 255)
+        const newR = Math.min(255, r + 80);
+        const newG = Math.min(255, g + 80);
+        const newB = Math.min(255, b + 80);
+        
+        return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
     }
     
     updateZombies(deltaTime) {
@@ -1346,6 +1421,37 @@ class TowerDefenseGame {
                     } else {
                         // Small explosion even if far away
                         this.createParticles(zombie.x, zombie.y, '#ff00ff', 8);
+                    }
+                } else if (zombie.isSplitBoss) {
+                    // Split Boss spawns 2 mini-bosses on death!
+                    this.showMessage('👹 SPLIT BOSS DIVIDED! 2 MINI-BOSSES INCOMING! 👹', '#ff00ff');
+                    this.showNarration('⚠️ TWO MINI-BOSSES! ⚠️', 2500);
+                    this.createParticles(zombie.x, zombie.y, '#ff00ff', 20);
+                    this.playSound('boss');
+                    
+                    // Spawn 2 mini-bosses at the death location
+                    for (let j = 0; j < 2; j++) {
+                        const angleOffset = (j === 0 ? -1 : 1);
+                        const spawnX = zombie.x + Math.cos(angleOffset) * 50;
+                        const spawnY = zombie.y + Math.sin(angleOffset) * 50;
+                        
+                        this.zombies.push({
+                            x: spawnX,
+                            y: spawnY,
+                            type: 'miniboss',
+                            radius: 25,
+                            health: 60 + this.wave * 12,
+                            maxHealth: 60 + this.wave * 12,
+                            speed: 0.4,
+                            goldValue: 60 + this.wave * 8,
+                            lastDamageTime: 0,
+                            damageRate: 950,
+                            damage: 2,
+                            color: '#ff0080',
+                            emoji: '👿',
+                            isBoss: true,
+                            isMiniBoss: true
+                        });
                     }
                 } else if (zombie.isSpawner) {
                     // Spawner zombie splits into 2 smaller zombies on death
@@ -1729,13 +1835,28 @@ class TowerDefenseGame {
         
         // Draw zombies
         this.zombies.forEach(zombie => {
+            // Elite zombies get extra glow ring
+            if (zombie.isElite) {
+                const pulseIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.3;
+                this.ctx.strokeStyle = zombie.glowColor;
+                this.ctx.lineWidth = 4;
+                this.ctx.shadowBlur = 25;
+                this.ctx.shadowColor = zombie.glowColor;
+                this.ctx.globalAlpha = pulseIntensity;
+                this.ctx.beginPath();
+                this.ctx.arc(zombie.x, zombie.y, zombie.radius + 5, 0, Math.PI * 2);
+                this.ctx.stroke();
+                this.ctx.globalAlpha = 1;
+                this.ctx.shadowBlur = 0;
+            }
+            
             // Zombie body with type-specific color and glow effect
             this.ctx.fillStyle = zombie.color || '#4a4';
             
             // Add glow effect for special zombies
-            if (zombie.isBoss || zombie.type === 'exploder' || zombie.type === 'tank') {
-                this.ctx.shadowBlur = 15;
-                this.ctx.shadowColor = zombie.color;
+            if (zombie.isBoss || zombie.type === 'exploder' || zombie.type === 'tank' || zombie.isElite) {
+                this.ctx.shadowBlur = zombie.isElite ? 20 : 15;
+                this.ctx.shadowColor = zombie.isElite ? zombie.glowColor : zombie.color;
             }
             
             this.ctx.beginPath();
@@ -2172,8 +2293,33 @@ class TowerDefenseGame {
                     this.wave++;
                     this.zombiesSpawned = 0;
                     this.bossSpawned = false; // Reset boss flag for new wave
+                    this.splitBossSpawned = false; // Reset split boss flag
                     this.zombiesPerWave = Math.floor(5 + this.wave * 1.5);
                     this.spawnRate = Math.max(500, 2000 - (this.wave * 50)); // Spawn faster
+                    
+                    // Determine themed wave (30% chance starting at wave 6)
+                    this.currentWaveTheme = null; // Reset theme
+                    if (this.wave >= 6 && Math.random() < 0.3 && this.wave % 5 !== 0) {
+                        // Don't theme boss waves, pick random type for themed wave
+                        const themeTypes = ['normal', 'strong', 'runner', 'tank'];
+                        // Add advanced types if wave is high enough
+                        if (this.wave >= 12) themeTypes.push('spawner');
+                        if (this.wave >= 15) themeTypes.push('exploder');
+                        
+                        this.currentWaveTheme = themeTypes[Math.floor(Math.random() * themeTypes.length)];
+                        
+                        // Announce themed wave
+                        const themeNames = {
+                            'normal': '🧟 HORDE WAVE',
+                            'strong': '🧟‍♂️ BRUTE WAVE',
+                            'runner': '🏃 SPEED WAVE',
+                            'tank': '🛡️ ARMOR WAVE',
+                            'spawner': '👥 SPAWN WAVE',
+                            'exploder': '💣 EXPLOSIVE WAVE'
+                        };
+                        this.showMessage(themeNames[this.currentWaveTheme] + '!', '#ffff00');
+                        this.showNarration(themeNames[this.currentWaveTheme] + '!', 2000);
+                    }
                     
                     // Narration for milestone waves
                     if (this.wave % 5 === 0) {
