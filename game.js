@@ -1832,15 +1832,15 @@ class TowerDefenseGame {
         // Speak the narration (remove emojis for cleaner speech)
         const cleanText = text.replace(/[⚡💀⚠️🏆✓]/g, '').trim();
         
-        // Adjust speech based on message type
+        // Adjust speech based on message type - slower rates sound more natural
         if (text.includes('BOSS')) {
-            this.speak(cleanText, { rate: 0.9, pitch: 0.8, volume: 1.0 }); // Slower, deeper
+            this.speak(cleanText, { rate: 0.85, pitch: 0.9, volume: 1.0 }); // Slower, slightly deeper
         } else if (text.includes('CRITICAL')) {
-            this.speak(cleanText, { rate: 1.2, pitch: 1.3, volume: 1.0 }); // Faster, higher pitch for urgency
+            this.speak(cleanText, { rate: 1.0, pitch: 1.1, volume: 1.0 }); // Normal speed, slightly higher
         } else if (text.includes('ACHIEVEMENT')) {
-            this.speak(cleanText, { rate: 1.0, pitch: 1.2, volume: 1.0 }); // Slightly higher pitch for celebration
+            this.speak(cleanText, { rate: 0.95, pitch: 1.05, volume: 1.0 }); // Slightly slower for clarity
         } else {
-            this.speak(cleanText, { rate: 1.0, pitch: 1.0, volume: 1.0 }); // Normal
+            this.speak(cleanText, { rate: 0.9, pitch: 1.0, volume: 1.0 }); // Slightly slower than default
         }
     }
     
@@ -2727,12 +2727,39 @@ class TowerDefenseGame {
             const loadVoices = () => {
                 const voices = speechSynthesis.getVoices();
                 console.log('Available voices:', voices.length);
-                // Try to find a good English voice
-                this.ttsVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
-                               voices.find(v => v.lang.startsWith('en')) ||
-                               voices[0];
+                
+                // Priority list for high-quality voices (in order of preference)
+                const voicePriority = [
+                    // Chrome/Edge premium voices
+                    v => v.name.includes('Google US English') || v.name.includes('Google UK English'),
+                    // Microsoft natural voices (Windows 11+)
+                    v => v.name.includes('Microsoft') && (v.name.includes('Aria') || v.name.includes('Guy') || v.name.includes('Jenny')),
+                    // Apple premium voices
+                    v => v.name.includes('Samantha') || v.name.includes('Alex'),
+                    // Any Google voice
+                    v => v.name.includes('Google') && v.lang.startsWith('en'),
+                    // Any Microsoft natural voice
+                    v => v.name.includes('Microsoft') && v.lang.startsWith('en') && !v.name.includes('Zira') && !v.name.includes('David'),
+                    // Any Apple voice
+                    v => v.name.includes('Apple') && v.lang.startsWith('en'),
+                    // Any English voice
+                    v => v.lang.startsWith('en')
+                ];
+                
+                // Try each priority until we find a voice
+                for (const priorityCheck of voicePriority) {
+                    this.ttsVoice = voices.find(priorityCheck);
+                    if (this.ttsVoice) break;
+                }
+                
+                // Fallback to first available voice
+                if (!this.ttsVoice && voices.length > 0) {
+                    this.ttsVoice = voices[0];
+                }
+                
                 if (this.ttsVoice) {
                     console.log('Selected voice:', this.ttsVoice.name, this.ttsVoice.lang);
+                    console.log('Voice local:', this.ttsVoice.localService ? 'Local' : 'Network');
                 } else {
                     console.warn('No voice selected');
                 }
@@ -3239,7 +3266,7 @@ class TowerDefenseGame {
         this.showNarration('🏆 ACHIEVEMENT UNLOCKED! 🏆', 3000);
         
         // Speak achievement name with excitement
-        this.speak(`Achievement unlocked! ${achievement.name}`, { rate: 1.0, pitch: 1.2, volume: 1.0 });
+        this.speak(`Achievement unlocked! ${achievement.name}`, { rate: 0.95, pitch: 1.05, volume: 1.0 });
         
         const gemReward = achievement.gemReward || 0;
         const popup = document.createElement('div');
