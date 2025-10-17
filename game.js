@@ -426,6 +426,11 @@ class TowerDefenseGame {
             this.applySettings();
         });
         
+        // Clear all data button
+        document.getElementById('clearAllDataBtn').addEventListener('click', () => {
+            this.clearAllData();
+        });
+        
         // Upgrade button
         document.getElementById('upgradeBtn').addEventListener('click', () => {
             this.openUpgradePanel();
@@ -4233,6 +4238,53 @@ class TowerDefenseGame {
         const soundToggle = document.getElementById('soundToggle');
         if (soundToggle) {
             soundToggle.textContent = this.soundEnabled ? '🔊' : '🔇';
+        }
+    }
+    
+    // ==========================================
+    // DATA MANAGEMENT
+    // ==========================================
+    
+    clearAllData() {
+        const confirmed = confirm('⚠️ WARNING ⚠️\n\nThis will permanently delete ALL saved data including:\n\n• All save slots (1, 2, 3)\n• All player profiles\n• All achievements\n• All statistics\n• All themes\n• Daily challenges\n• Leaderboards\n• Settings\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?');
+        
+        if (!confirmed) return;
+        
+        // Double confirmation
+        const doubleConfirm = confirm('This is your LAST CHANCE!\n\nAll progress will be PERMANENTLY LOST.\n\nClick OK to DELETE EVERYTHING.');
+        
+        if (!doubleConfirm) return;
+        
+        try {
+            // Clear all localStorage data
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                // Only remove game-related data
+                if (key.startsWith('teslaTower') || 
+                    key.startsWith('dailyChallenges') || 
+                    key.startsWith('leaderboards') || 
+                    key === 'playerName' || 
+                    key === 'currentSlot' ||
+                    key === 'gameSettings' ||
+                    key === 'soundEnabled' ||
+                    key === 'ttsEnabled') {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            // Remove all identified keys
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            // Show success message
+            alert('✓ All data has been cleared!\n\nThe page will now reload to start fresh.');
+            
+            // Reload the page to reset everything
+            location.reload();
+            
+        } catch (error) {
+            console.error('Error clearing data:', error);
+            alert('❌ Error clearing data. Please try clearing your browser cache manually.');
         }
     }
 }
