@@ -2704,7 +2704,6 @@ class TowerDefenseGame {
             <p class="streak-info">🔥 Login Streak: Day ${streak}</p>
             <p>You've earned:</p>
             <p class="reward-highlight">💎 +${rewards.gems} Gems</p>
-            <p class="reward-highlight">💀 +${rewards.kills} Kills</p>
             ${streak % 7 === 0 ? '<p style="color: #ff00ff;">🎉 Weekly Bonus!</p>' : ''}
         `;
         
@@ -2712,31 +2711,27 @@ class TowerDefenseGame {
     }
     
     calculateDailyReward(streak) {
-        // Base rewards
+        // Base reward - gems only
         let gems = 5;
-        let kills = 50;
         
         // Bonus for streak
         const streakBonus = Math.floor(streak / 3); // Bonus every 3 days
         gems += streakBonus * 2;
-        kills += streakBonus * 25;
         
         // Weekly bonus (day 7, 14, 21, etc.)
         if (streak % 7 === 0) {
             gems += 15;
-            kills += 100;
         }
         
-        return { gems, kills };
+        return { gems };
     }
     
     claimDailyReward() {
         const streak = this.permStats.dailyRewards.streak;
         const rewards = this.calculateDailyReward(streak);
         
-        // Add rewards
+        // Add gems reward only
         this.permStats.gems += rewards.gems;
-        this.permStats.totalKills += rewards.kills;
         
         // Update last login
         this.permStats.dailyRewards.lastLogin = new Date().toDateString();
@@ -3905,7 +3900,7 @@ class TowerDefenseGame {
             challengeEl.innerHTML = `
                 <h3>${challenge.name}</h3>
                 <p>${challenge.description}</p>
-                <p class="challenge-reward">Reward: +${challenge.reward} Total Kills</p>
+                <p class="challenge-reward">Reward: +${challenge.reward} Gems 💎</p>
                 ${progressText}
             `;
             
@@ -4123,7 +4118,7 @@ class TowerDefenseGame {
                 goal: 10,
                 progress: 0,
                 completed: false,
-                reward: 100,
+                reward: 20,
                 check: () => this.wave >= 10 && this.challengeTracking.upgradesUsed === 0
             },
             {
@@ -4133,7 +4128,7 @@ class TowerDefenseGame {
                 goal: 100,
                 progress: 0,
                 completed: false,
-                reward: 150,
+                reward: 30,
                 check: () => this.challengeTracking.clickKills >= 100
             },
             {
@@ -4143,7 +4138,7 @@ class TowerDefenseGame {
                 goal: 15,
                 progress: 0,
                 completed: false,
-                reward: 200,
+                reward: 40,
                 check: () => this.wave >= 15 && this.challengeTracking.damageTaken === 0
             }
         ];
@@ -4182,8 +4177,8 @@ class TowerDefenseGame {
                 if (!challenge.completed && challenge.check && challenge.check()) {
                     challenge.completed = true;
                     challenge.progress = challenge.goal;
-                    this.permStats.totalKills += challenge.reward;
-                    this.showMessage(`🏆 Challenge Complete! +${challenge.reward} Total Kills!`, '#ffd700');
+                    this.permStats.gems += challenge.reward;
+                    this.showMessage(`🏆 Challenge Complete! +${challenge.reward} Gems!`, '#ffd700');
                     this.saveDailyChallenges();
                     this.savePermanentStats();
                 }
