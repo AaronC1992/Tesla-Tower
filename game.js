@@ -2643,6 +2643,14 @@ class TowerDefenseGame {
             return;
         }
         
+        // Helper function to convert hex to RGB
+        const hexToRgb = (hex) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? 
+                `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
+                '0, 0, 0';
+        };
+        
         // Apply theme colors to CSS variables
         const root = document.documentElement;
         root.style.setProperty('--primary-color', themeData.colors.primary);
@@ -2655,6 +2663,10 @@ class TowerDefenseGame {
         root.style.setProperty('--danger-color', themeData.colors.danger);
         root.style.setProperty('--warning-color', themeData.colors.warning);
         root.style.setProperty('--gold-color', themeData.colors.gold);
+        
+        // Set RGB versions for rgba() usage
+        root.style.setProperty('--primary-color-rgb', hexToRgb(themeData.colors.primary));
+        root.style.setProperty('--secondary-color-rgb', hexToRgb(themeData.colors.secondary));
         
         // Update current theme
         this.permStats.themes.current = theme;
