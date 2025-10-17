@@ -1803,6 +1803,7 @@ body {
     background: rgba(0, 255, 255, 0.2);
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 #volumeSlider::-webkit-slider-thumb {
