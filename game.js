@@ -167,6 +167,9 @@ class TowerDefenseGame {
             document.getElementById('titleScreen').classList.remove('active');
             document.getElementById('mainMenu').classList.add('active');
             document.getElementById('currentPlayerName').textContent = `Player: ${playerName}`;
+            
+            // Check for daily reward for returning players
+            this.checkDailyReward();
         } else {
             // No player name, show title screen
             document.getElementById('titleScreen').classList.add('active');
@@ -2273,6 +2276,11 @@ class TowerDefenseGame {
             // Reload permanent stats and achievements for this slot
             this.loadPermanentStats();
             this.loadAchievements();
+            this.loadDailyChallenges();
+            this.loadLeaderboards();
+            
+            // Check for daily reward for this slot
+            this.checkDailyReward();
             
             // Restore game state
             this.wave = data.wave;
@@ -2483,8 +2491,8 @@ class TowerDefenseGame {
             };
         }
         
-        // Check for daily reward
-        this.checkDailyReward();
+        // NOTE: Don't check daily reward here - it should only trigger after player logs in!
+        // Daily reward check moved to: confirmPlayerName(), loadGame(), and setupTitleScreen()
         
         // NOTE: Don't call applyPermanentBonuses here - tower doesn't exist yet!
         // It will be called from init() after everything is set up
@@ -3931,6 +3939,9 @@ class TowerDefenseGame {
         // Apply the default theme
         this.applyTheme('classic');
         
+        // Check for daily reward (will be first-time login for new player)
+        this.checkDailyReward();
+        
         // Hide name input, show main menu
         document.getElementById('nameInputScreen').classList.remove('active');
         document.getElementById('mainMenu').classList.add('active');
@@ -3950,7 +3961,7 @@ class TowerDefenseGame {
     
     loadDailyChallenges() {
         const today = new Date().toDateString();
-        const saved = localStorage.getItem('dailyChallenges');
+        const saved = localStorage.getItem(`dailyChallenges_slot${this.currentSlot}`);
         
         // Define the challenge templates with check functions
         const challengeTemplates = [
@@ -4008,7 +4019,7 @@ class TowerDefenseGame {
     
     saveDailyChallenges() {
         const today = new Date().toDateString();
-        localStorage.setItem('dailyChallenges', JSON.stringify({
+        localStorage.setItem(`dailyChallenges_slot${this.currentSlot}`, JSON.stringify({
             date: today,
             challenges: this.dailyChallenges
         }));
@@ -4036,7 +4047,7 @@ class TowerDefenseGame {
     // ==========================================
     
     loadLeaderboards() {
-        const saved = localStorage.getItem('leaderboards');
+        const saved = localStorage.getItem(`leaderboards_slot${this.currentSlot}`);
         
         if (saved) {
             this.leaderboards = JSON.parse(saved);
@@ -4050,7 +4061,7 @@ class TowerDefenseGame {
     }
     
     saveLeaderboards() {
-        localStorage.setItem('leaderboards', JSON.stringify(this.leaderboards));
+        localStorage.setItem(`leaderboards_slot${this.currentSlot}`, JSON.stringify(this.leaderboards));
     }
     
     updateLeaderboards() {
