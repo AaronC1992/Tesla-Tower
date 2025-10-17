@@ -1826,19 +1826,7 @@ class TowerDefenseGame {
     }
     
     showNarration(text, duration = 2500) {
-        const narrationEl = document.getElementById('narrationDisplay');
-        if (!narrationEl) return;
-        
-        // Clear any existing timeout
-        if (this.narrationTimeout) {
-            clearTimeout(this.narrationTimeout);
-        }
-        
-        // Set text and show
-        narrationEl.textContent = text;
-        narrationEl.classList.add('show');
-        
-        // Play sound effect
+        // Just play sound and speak - no visual popup
         this.playSound('powerUp');
         
         // Speak the narration (remove emojis for cleaner speech)
@@ -1854,11 +1842,6 @@ class TowerDefenseGame {
         } else {
             this.speak(cleanText, { rate: 1.0, pitch: 1.0, volume: 1.0 }); // Normal
         }
-        
-        // Hide after duration
-        this.narrationTimeout = setTimeout(() => {
-            narrationEl.classList.remove('show');
-        }, duration);
     }
     
     // Tooltip System
