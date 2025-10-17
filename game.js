@@ -22,6 +22,10 @@ class TowerDefenseGame {
         this.kills = 0;
         this.gold = 100;
         
+        // Game speed control
+        this.gameSpeed = 1; // 1x, 2x, or 4x
+        this.speedMultiplier = 1;
+        
         // Session stats tracking
         this.sessionDamage = 0;
         this.sessionClicks = 0;
@@ -506,6 +510,11 @@ class TowerDefenseGame {
             this.toggleSound();
         });
         
+        // Speed control button
+        document.getElementById('speedToggle').addEventListener('click', () => {
+            this.cycleGameSpeed();
+        });
+        
         // Save and Load buttons (open slot panel)
         document.getElementById('saveGameBtn').addEventListener('click', () => {
             console.log('Save button clicked!');
@@ -596,6 +605,10 @@ class TowerDefenseGame {
         
         console.log('Menu after:', menu.classList.contains('active'));
         console.log('Upgrade button after:', upgradeBtn.classList.contains('active'));
+        
+        // Show speed control button
+        document.getElementById('speedToggle').classList.add('active');
+        this.updateSpeedButton();
         
         this.lastFrameTime = performance.now();
     }
@@ -707,8 +720,13 @@ class TowerDefenseGame {
         this.isGameOver = false;
         this.isPaused = false;
         
-        // Hide upgrade button and show main menu
+        // Reset game speed
+        this.gameSpeed = 1;
+        this.speedMultiplier = 1;
+        
+        // Hide upgrade button and speed button, show main menu
         document.getElementById('upgradeBtn').classList.remove('active');
+        document.getElementById('speedToggle').classList.remove('active');
         document.getElementById('mainMenu').classList.add('active');
         document.getElementById('gameOver').classList.remove('active');
         
@@ -1957,6 +1975,11 @@ class TowerDefenseGame {
         this.sessionGoldEarned = 0;
         this.sessionBossKills = 0;
         
+        // Reset game speed
+        this.gameSpeed = 1;
+        this.speedMultiplier = 1;
+        this.updateSpeedButton();
+        
         // Reset challenge tracking
         this.challengeTracking = {
             upgradesUsed: 0,
@@ -2013,9 +2036,12 @@ class TowerDefenseGame {
         const deltaTime = currentTime - this.lastFrameTime;
         this.lastFrameTime = currentTime;
         
+        // Apply speed multiplier to deltaTime for game logic
+        const speedAdjustedDelta = deltaTime * this.speedMultiplier;
+        
         if (!this.isPaused && !this.isGameOver && this.isGameStarted) {
-            // Spawn zombies
-            if (currentTime - this.lastSpawn > this.spawnRate) {
+            // Spawn zombies (speed adjusted)
+            if (currentTime - this.lastSpawn > this.spawnRate / this.speedMultiplier) {
                 this.spawnZombie();
                 this.lastSpawn = currentTime;
                 this.zombiesSpawned++;
@@ -2035,15 +2061,15 @@ class TowerDefenseGame {
                 }
             }
             
-            // Update game objects
-            this.updateZombies(deltaTime);
+            // Update game objects (with speed-adjusted deltaTime)
+            this.updateZombies(speedAdjustedDelta);
             this.towerAttack(currentTime);
-            this.updateLightning(deltaTime);
-            this.updateParticles(deltaTime);
-            this.updateDamageNumbers(deltaTime);
-            this.updateTowerSparks(deltaTime);
-            this.updateImpactParticles(deltaTime);
-            this.updateGoldCoins(deltaTime);
+            this.updateLightning(speedAdjustedDelta);
+            this.updateParticles(speedAdjustedDelta);
+            this.updateDamageNumbers(speedAdjustedDelta);
+            this.updateTowerSparks(speedAdjustedDelta);
+            this.updateImpactParticles(speedAdjustedDelta);
+            this.updateGoldCoins(speedAdjustedDelta);
             this.handleContinuousShooting(currentTime);
             this.updateUI();
         }
@@ -2335,6 +2361,50 @@ class TowerDefenseGame {
         localStorage.setItem('soundEnabled', this.soundEnabled);
         document.getElementById('soundToggle').textContent = this.soundEnabled ? '🔊' : '🔇';
         this.showMessage(this.soundEnabled ? 'Sound ON' : 'Sound OFF', this.soundEnabled ? '#00ff00' : '#ff0000');
+    }
+    
+    cycleGameSpeed() {
+        // Cycle through speeds: 1x -> 2x -> 4x -> 1x
+        if (this.gameSpeed === 1) {
+            this.gameSpeed = 2;
+            this.speedMultiplier = 2;
+        } else if (this.gameSpeed === 2) {
+            this.gameSpeed = 4;
+            this.speedMultiplier = 4;
+        } else {
+            this.gameSpeed = 1;
+            this.speedMultiplier = 1;
+        }
+        
+        this.updateSpeedButton();
+        this.playSound('click');
+        
+        // Show speed change message
+        const speedColors = { 1: '#00ffff', 2: '#ffff00', 4: '#ff00ff' };
+        this.showMessage(`Speed: ${this.gameSpeed}x`, speedColors[this.gameSpeed]);
+    }
+    
+    updateSpeedButton() {
+        const speedBtn = document.getElementById('speedToggle');
+        const speedIcon = speedBtn.querySelector('.speed-icon');
+        const speedText = speedBtn.querySelector('.speed-text');
+        
+        // Update text
+        speedText.textContent = `${this.gameSpeed}x`;
+        
+        // Update icon
+        if (this.gameSpeed === 1) {
+            speedIcon.textContent = '▶';
+            speedBtn.classList.remove('speed-2x', 'speed-4x');
+        } else if (this.gameSpeed === 2) {
+            speedIcon.textContent = '⏩';
+            speedBtn.classList.remove('speed-4x');
+            speedBtn.classList.add('speed-2x');
+        } else if (this.gameSpeed === 4) {
+            speedIcon.textContent = '⏭';
+            speedBtn.classList.remove('speed-2x');
+            speedBtn.classList.add('speed-4x');
+        }
     }
     
     playSound(type) {
