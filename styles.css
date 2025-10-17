@@ -1203,6 +1203,22 @@ body {
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
 }
 
+.kill-cost {
+    color: #ffaa00 !important;
+    background: rgba(255, 170, 0, 0.1) !important;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.8) !important;
+}
+
+.kill-upgrade {
+    border-color: #ffaa00 !important;
+    background: linear-gradient(135deg, rgba(255, 170, 0, 0.2), rgba(255, 200, 0, 0.2)) !important;
+}
+
+.kill-upgrade:hover {
+    border-color: #ffff00 !important;
+    box-shadow: 0 0 30px rgba(255, 170, 0, 0.6) !important;
+}
+
 /* Permanent Upgrades Panel */
 .perm-upgrades-panel {
     position: fixed;

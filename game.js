@@ -244,16 +244,7 @@ class TowerDefenseGame {
             this.startGame();
         });
         
-        // Permanent Upgrades button
-        document.getElementById('permUpgradesBtn').addEventListener('click', () => {
-            this.openPermUpgradesPanel();
-        });
-        
-        document.getElementById('closePermUpgrades').addEventListener('click', () => {
-            this.closePermUpgradesPanel();
-        });
-        
-        // Permanent upgrade purchase buttons
+        // Permanent upgrade purchase buttons (now in gem shop)
         document.getElementById('buyPermDamage').addEventListener('click', () => {
             this.buyPermUpgrade('damage');
         });
@@ -2831,8 +2822,9 @@ class TowerDefenseGame {
     
     updateGemShopPanel() {
         document.getElementById('shopGemsAmount').textContent = this.permStats.gems;
+        document.getElementById('shopTotalKills').textContent = this.permStats.totalKills;
         
-        // Update owned levels
+        // Update gem upgrade owned levels
         document.getElementById('gemDamageLevel').textContent = this.permStats.gemUpgrades.damageMultiplier;
         document.getElementById('gemHealthLevel').textContent = this.permStats.gemUpgrades.healthMultiplier;
         document.getElementById('gemGoldLevel').textContent = this.permStats.gemUpgrades.goldMultiplier;
@@ -2840,7 +2832,13 @@ class TowerDefenseGame {
         document.getElementById('gemCritLevel').textContent = this.permStats.gemUpgrades.critChance;
         document.getElementById('gemRegenLevel').textContent = this.permStats.gemUpgrades.healthRegen;
         
-        // Update costs (increase by 10% per level owned)
+        // Update kill upgrade owned levels
+        document.getElementById('permBonusDamageLevel').textContent = '+' + this.permStats.bonusDamage;
+        document.getElementById('permBonusHealthLevel').textContent = '+' + this.permStats.bonusHealth;
+        document.getElementById('permBonusClickLevel').textContent = '+' + this.permStats.bonusClickDamage;
+        document.getElementById('permBonusGoldLevel').textContent = '+' + this.permStats.bonusStartGold;
+        
+        // Update gem upgrade costs (increase by 10% per level owned)
         const baseCosts = { damageMultiplier: 50, healthMultiplier: 50, goldMultiplier: 75, xpMultiplier: 60, critChance: 100, healthRegen: 80 };
         Object.keys(baseCosts).forEach(upgrade => {
             const level = this.permStats.gemUpgrades[upgrade];
@@ -2866,6 +2864,31 @@ class TowerDefenseGame {
             };
             const btn = document.getElementById(btnMap[upgrade]);
             if (this.permStats.gems < cost) {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
+        
+        // Update kill upgrade costs
+        const killCosts = {
+            damage: 50 + this.permStats.bonusDamage * 25,
+            health: 100 + this.permStats.bonusHealth * 50,
+            click: 75 + this.permStats.bonusClickDamage * 35,
+            gold: 150 + this.permStats.bonusStartGold * 75
+        };
+        
+        document.getElementById('permDamageCost').textContent = killCosts.damage;
+        document.getElementById('permHealthCost').textContent = killCosts.health;
+        document.getElementById('permClickCost').textContent = killCosts.click;
+        document.getElementById('permGoldCost').textContent = killCosts.gold;
+        
+        // Disable kill upgrade buttons if not enough kills
+        ['damage', 'health', 'click', 'gold'].forEach(type => {
+            const btn = document.getElementById(`buyPerm${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            if (this.permStats.totalKills < killCosts[type]) {
                 btn.style.opacity = '0.5';
                 btn.style.cursor = 'not-allowed';
             } else {
@@ -2971,8 +2994,9 @@ class TowerDefenseGame {
         }
         
         this.savePermanentStats();
-        this.updatePermUpgradesPanel();
+        this.updateGemShopPanel();
         this.showMessage('Permanent Upgrade Purchased! ✓', '#00ff00');
+        this.playSound('powerUp');
     }
     
     openStatsPanel() {

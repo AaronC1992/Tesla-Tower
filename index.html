@@ -116,8 +116,7 @@
                     <button class="menu-btn" id="saveGameBtn">SAVE GAME</button>
                     <button class="menu-btn" id="loadGameBtn">LOAD GAME</button>
                     <button class="menu-btn" id="settingsBtn">⚙️ SETTINGS</button>
-                    <button class="menu-btn gem-shop-btn" id="gemShopBtn">💎 GEM SHOP</button>
-                    <button class="menu-btn" id="permUpgradesBtn">PERMANENT UPGRADES</button>
+                    <button class="menu-btn gem-shop-btn" id="gemShopBtn">💎 SHOP & UPGRADES</button>
                     <button class="menu-btn" id="statsBtn">STATISTICS</button>
                     <button class="menu-btn" id="achievementsBtn">ACHIEVEMENTS</button>
                     <button class="menu-btn" id="enemyTypesBtn">ENEMY TYPES</button>
@@ -266,9 +265,11 @@
             
             <div class="shop-gems">
                 <p>💎 Your Gems: <span id="shopGemsAmount">0</span></p>
-                <p class="shop-info">Purchase powerful permanent buffs with gems earned from achievements!</p>
+                <p>💀 Total Kills: <span id="shopTotalKills">0</span></p>
+                <p class="shop-info">Spend gems on multipliers or kills on flat bonuses!</p>
             </div>
             
+            <h3 style="color: #ff00ff; text-align: center; margin: 20px 0;">💎 Gem Upgrades (Multipliers)</h3>
             <div class="shop-items">
                 <button class="shop-item" id="buyGemDamage">
                     <div class="shop-icon">⚔️</div>
@@ -318,54 +319,39 @@
                     <div class="shop-cost">💎 <span id="gemRegenCost">80</span> gems</div>
                 </button>
             </div>
-        </div>
-
-        <!-- Permanent Upgrades Panel -->
-        <div class="panel-backdrop" id="permUpgradesBackdrop"></div>
-        <div class="perm-upgrades-panel" id="permUpgradesPanel">
-            <h2>⭐ PERMANENT UPGRADES</h2>
-            <div class="upgrade-close" id="closePermUpgrades">✕</div>
             
-            <div class="perm-stats">
-                <p>💀 Total Kills (All Runs): <span id="totalKills">0</span></p>
-                <p class="perm-info">Spend kills on permanent bonuses that apply to every new game!</p>
-            </div>
-            
-            <div class="perm-current-bonuses">
-                <h3>Current Bonuses:</h3>
-                <p>⚔️ Damage: <span id="permBonusDamage">+0</span></p>
-                <p>❤️ Health: <span id="permBonusHealth">+0</span></p>
-                <p>👆 Click Damage: <span id="permBonusClick">+0</span></p>
-                <p>💰 Starting Gold: <span id="permBonusGold">+0</span></p>
-            </div>
-            
-            <div class="perm-upgrade-options">
-                <button class="perm-upgrade-option" id="buyPermDamage">
-                    <div class="upgrade-icon">⚔️</div>
-                    <div class="upgrade-name">Bonus Damage</div>
-                    <div class="upgrade-desc">+2 tower damage (permanent)</div>
-                    <div class="upgrade-cost">Cost: <span id="permDamageCost">50</span> kills</div>
+            <h3 style="color: #ffaa00; text-align: center; margin: 30px 0 20px 0;">💀 Kill Upgrades (Flat Bonuses)</h3>
+            <div class="shop-items">
+                <button class="shop-item kill-upgrade" id="buyPermDamage">
+                    <div class="shop-icon">⚔️</div>
+                    <div class="shop-name">Bonus Damage</div>
+                    <div class="shop-desc">+2 tower damage (permanent)</div>
+                    <div class="shop-level">Owned: <span id="permBonusDamageLevel">+0</span></div>
+                    <div class="shop-cost kill-cost">💀 <span id="permDamageCost">50</span> kills</div>
                 </button>
 
-                <button class="perm-upgrade-option" id="buyPermHealth">
-                    <div class="upgrade-icon">❤️</div>
-                    <div class="upgrade-name">Bonus Health</div>
-                    <div class="upgrade-desc">+20 max health (permanent)</div>
-                    <div class="upgrade-cost">Cost: <span id="permHealthCost">100</span> kills</div>
+                <button class="shop-item kill-upgrade" id="buyPermHealth">
+                    <div class="shop-icon">❤️</div>
+                    <div class="shop-name">Bonus Health</div>
+                    <div class="shop-desc">+20 max health (permanent)</div>
+                    <div class="shop-level">Owned: <span id="permBonusHealthLevel">+0</span></div>
+                    <div class="shop-cost kill-cost">💀 <span id="permHealthCost">100</span> kills</div>
                 </button>
 
-                <button class="perm-upgrade-option" id="buyPermClick">
-                    <div class="upgrade-icon">👆</div>
-                    <div class="upgrade-name">Bonus Click Power</div>
-                    <div class="upgrade-desc">+1 click damage (permanent)</div>
-                    <div class="upgrade-cost">Cost: <span id="permClickCost">75</span> kills</div>
+                <button class="shop-item kill-upgrade" id="buyPermClick">
+                    <div class="shop-icon">👆</div>
+                    <div class="shop-name">Bonus Click Power</div>
+                    <div class="shop-desc">+1 click damage (permanent)</div>
+                    <div class="shop-level">Owned: <span id="permBonusClickLevel">+0</span></div>
+                    <div class="shop-cost kill-cost">💀 <span id="permClickCost">75</span> kills</div>
                 </button>
 
-                <button class="perm-upgrade-option" id="buyPermGold">
-                    <div class="upgrade-icon">💰</div>
-                    <div class="upgrade-name">Bonus Starting Gold</div>
-                    <div class="upgrade-desc">+50 gold at start (permanent)</div>
-                    <div class="upgrade-cost">Cost: <span id="permGoldCost">150</span> kills</div>
+                <button class="shop-item kill-upgrade" id="buyPermGold">
+                    <div class="shop-icon">💰</div>
+                    <div class="shop-name">Bonus Starting Gold</div>
+                    <div class="shop-desc">+50 gold at start (permanent)</div>
+                    <div class="shop-level">Owned: <span id="permBonusGoldLevel">+0</span></div>
+                    <div class="shop-cost kill-cost">💀 <span id="permGoldCost">150</span> kills</div>
                 </button>
             </div>
         </div>
