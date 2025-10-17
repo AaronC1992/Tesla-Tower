@@ -1,3 +1,17 @@
+:root {
+    /* Theme colors - can be overridden by theme system */
+    --primary-color: #00ffff;
+    --secondary-color: #ff00ff;
+    --background-color: #0a0a1a;
+    --panel-color: #1a1a2e;
+    --text-color: #ffffff;
+    --border-color: #00ffff;
+    --success-color: #00ff00;
+    --danger-color: #ff0000;
+    --warning-color: #ffff00;
+    --gold-color: #ffd700;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -14,8 +28,8 @@ html, body {
 
 body {
     font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--background-color) 0%, var(--panel-color) 100%);
+    color: var(--text-color);
     user-select: none;
     touch-action: none;
 }
@@ -1217,6 +1231,185 @@ body {
 .kill-upgrade:hover {
     border-color: #ffff00 !important;
     box-shadow: 0 0 30px rgba(255, 170, 0, 0.6) !important;
+}
+
+/* Themes Panel */
+.themes-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.98);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    z-index: 500;
+    overflow-y: auto;
+}
+
+.themes-panel.active {
+    display: flex;
+}
+
+.themes-panel h2 {
+    color: var(--primary-color);
+    font-size: 32px;
+    text-shadow: 0 0 15px var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.themes-info {
+    background: rgba(var(--primary-color-rgb, 0, 255, 255), 0.1);
+    border: 2px solid var(--primary-color);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+    max-width: 600px;
+}
+
+.themes-info p {
+    color: var(--primary-color);
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.theme-card {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
+    border: 3px solid var(--primary-color);
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.theme-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+}
+
+.theme-card.current {
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.theme-card.locked {
+    opacity: 0.6;
+}
+
+.theme-preview {
+    height: 100px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-colors {
+    display: flex;
+    gap: 10px;
+}
+
+.theme-colors span {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.theme-name {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.theme-desc {
+    color: #aaaaaa;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.theme-requirement {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.theme-requirement.met {
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.theme-requirement.unmet {
+    color: #ff6666;
+    background: rgba(255, 0, 0, 0.1);
+}
+
+.theme-current {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+    font-weight: bold;
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.theme-cost {
+    color: #ff00ff;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.theme-apply-btn, .theme-unlock-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.theme-apply-btn {
+    background: linear-gradient(135deg, #00ffff, #0088ff);
+    color: #000;
+}
+
+.theme-apply-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+}
+
+.theme-unlock-btn {
+    background: linear-gradient(135deg, #ff00ff, #8800ff);
+    color: white;
+}
+
+.theme-unlock-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
 }
 
 /* Permanent Upgrades Panel */

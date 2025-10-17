@@ -149,6 +149,9 @@ class TowerDefenseGame {
         // Apply permanent bonuses now that tower exists
         this.applyPermanentBonuses();
         
+        // Apply current theme
+        this.applyTheme();
+        
         this.setupEventListeners();
         this.setupBackdropCloseListeners();
         this.setupTitleScreen();
@@ -325,6 +328,15 @@ class TowerDefenseGame {
         // Daily reward claim button
         document.getElementById('claimRewardBtn').addEventListener('click', () => {
             this.claimDailyReward();
+        });
+        
+        // Themes button
+        document.getElementById('themesBtn').addEventListener('click', () => {
+            this.openThemesPanel();
+        });
+        
+        document.getElementById('closeThemes').addEventListener('click', () => {
+            this.closeThemesPanel();
         });
         
         // Achievements button
@@ -2420,6 +2432,14 @@ class TowerDefenseGame {
             };
         }
         
+        // Add themes if not present (backward compatibility)
+        if (!this.permStats.themes) {
+            this.permStats.themes = {
+                unlocked: ['classic'], // Classic is always unlocked
+                current: 'classic'
+            };
+        }
+        
         // Check for daily reward
         this.checkDailyReward();
         
@@ -2569,6 +2589,97 @@ class TowerDefenseGame {
         this.healthRegen = this.permStats.gemUpgrades.healthRegen; // 1 HP per 5 seconds per level
     }
     
+    applyTheme(themeName = null) {
+        // Use current theme if none specified
+        const theme = themeName || this.permStats.themes.current;
+        const themes = this.getThemes();
+        const themeData = themes[theme];
+        
+        if (!themeData) {
+            console.error('Theme not found:', theme);
+            return;
+        }
+        
+        // Apply theme colors to CSS variables
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', themeData.colors.primary);
+        root.style.setProperty('--secondary-color', themeData.colors.secondary);
+        root.style.setProperty('--background-color', themeData.colors.background);
+        root.style.setProperty('--panel-color', themeData.colors.panel);
+        root.style.setProperty('--text-color', themeData.colors.text);
+        root.style.setProperty('--border-color', themeData.colors.border);
+        root.style.setProperty('--success-color', themeData.colors.success);
+        root.style.setProperty('--danger-color', themeData.colors.danger);
+        root.style.setProperty('--warning-color', themeData.colors.warning);
+        root.style.setProperty('--gold-color', themeData.colors.gold);
+        
+        // Update current theme
+        this.permStats.themes.current = theme;
+        this.savePermanentStats();
+        
+        // Show message
+        if (themeName) {
+            this.showMessage(`Theme applied: ${themeData.name}`, themeData.colors.primary);
+            this.playSound('achievement');
+        }
+    }
+    
+    checkThemeUnlock(themeKey) {
+        const themes = this.getThemes();
+        const theme = themes[themeKey];
+        
+        if (!theme || !theme.requirement) return true;
+        
+        // Check if achievement requirement is met
+        const achievement = this.achievements.find(a => a.id === theme.requirement);
+        return achievement && achievement.unlocked;
+    }
+    
+    unlockTheme(themeKey) {
+        const themes = this.getThemes();
+        const theme = themes[themeKey];
+        
+        if (!theme) {
+            this.showMessage('Theme not found!', '#ff0000');
+            return false;
+        }
+        
+        // Check if already unlocked
+        if (this.permStats.themes.unlocked.includes(themeKey)) {
+            this.showMessage('Theme already unlocked!', '#ffaa00');
+            return false;
+        }
+        
+        // Check achievement requirement
+        if (!this.checkThemeUnlock(themeKey)) {
+            this.showMessage('Achievement requirement not met!', '#ff0000');
+            return false;
+        }
+        
+        // Check gem cost
+        if (this.permStats.gems < theme.cost) {
+            this.showMessage(`Not enough gems! Need ${theme.cost}`, '#ff0000');
+            return false;
+        }
+        
+        // Purchase theme
+        this.permStats.gems -= theme.cost;
+        this.permStats.themes.unlocked.push(themeKey);
+        this.savePermanentStats();
+        
+        this.showMessage(`Unlocked ${theme.name} theme!`, '#ffd700');
+        this.playSound('achievement');
+        
+        // Apply theme immediately
+        this.applyTheme(themeKey);
+        
+        // Update UI
+        this.updateThemesPanel();
+        this.updateUI();
+        
+        return true;
+    }
+    
     initSounds() {
         // Create audio context
         this.audioContext = null;
@@ -2608,6 +2719,137 @@ class TowerDefenseGame {
         // Show speed change message
         const speedColors = { 1: '#00ffff', 2: '#ffff00', 4: '#ff00ff' };
         this.showMessage(`Speed: ${this.gameSpeed}x`, speedColors[this.gameSpeed]);
+    }
+    
+    getThemes() {
+        return {
+            classic: {
+                name: 'Classic',
+                description: 'The original Tesla Tower theme',
+                cost: 0,
+                requirement: null,
+                colors: {
+                    primary: '#00ffff',
+                    secondary: '#ff00ff',
+                    background: '#0a0a1a',
+                    panel: '#1a1a2e',
+                    text: '#ffffff',
+                    border: '#00ffff',
+                    success: '#00ff00',
+                    danger: '#ff0000',
+                    warning: '#ffff00',
+                    gold: '#ffd700'
+                }
+            },
+            darkPurple: {
+                name: 'Dark Purple',
+                description: 'Mystical purple energy',
+                cost: 50,
+                requirement: 'wave5',
+                colors: {
+                    primary: '#9d4edd',
+                    secondary: '#c77dff',
+                    background: '#10002b',
+                    panel: '#240046',
+                    text: '#e0aaff',
+                    border: '#7b2cbf',
+                    success: '#06ffa5',
+                    danger: '#ff006e',
+                    warning: '#ffbe0b',
+                    gold: '#ffd60a'
+                }
+            },
+            oceanBlue: {
+                name: 'Ocean Blue',
+                description: 'Deep sea currents',
+                cost: 75,
+                requirement: 'wave10',
+                colors: {
+                    primary: '#0077b6',
+                    secondary: '#00b4d8',
+                    background: '#03045e',
+                    panel: '#023e8a',
+                    text: '#caf0f8',
+                    border: '#0096c7',
+                    success: '#06ffa5',
+                    danger: '#e63946',
+                    warning: '#f77f00',
+                    gold: '#ffd60a'
+                }
+            },
+            forestGreen: {
+                name: 'Forest Green',
+                description: 'Nature\'s power',
+                cost: 100,
+                requirement: 'wave20',
+                colors: {
+                    primary: '#2d6a4f',
+                    secondary: '#52b788',
+                    background: '#081c15',
+                    panel: '#1b4332',
+                    text: '#d8f3dc',
+                    border: '#40916c',
+                    success: '#95d5b2',
+                    danger: '#d00000',
+                    warning: '#ffba08',
+                    gold: '#ffd60a'
+                }
+            },
+            sunsetOrange: {
+                name: 'Sunset Orange',
+                description: 'Blazing fire energy',
+                cost: 125,
+                requirement: 'killStreak100',
+                colors: {
+                    primary: '#ff6d00',
+                    secondary: '#ff9e00',
+                    background: '#1a0800',
+                    panel: '#370617',
+                    text: '#ffe5d9',
+                    border: '#ff8500',
+                    success: '#06ffa5',
+                    danger: '#c9184a',
+                    warning: '#ffd60a',
+                    gold: '#ffe169'
+                }
+            },
+            neonPink: {
+                name: 'Neon Pink',
+                description: 'Cyberpunk vibes',
+                cost: 150,
+                requirement: 'perfectWave',
+                colors: {
+                    primary: '#ff006e',
+                    secondary: '#ff0a54',
+                    background: '#000000',
+                    panel: '#1a001a',
+                    text: '#ffccd5',
+                    border: '#ff0080',
+                    success: '#06ffa5',
+                    danger: '#fb5607',
+                    warning: '#ffbe0b',
+                    gold: '#ffd60a'
+                }
+            },
+            goldenRoyal: {
+                name: 'Golden Royal',
+                description: 'Luxurious gold and purple',
+                cost: 200,
+                requirement: 'allAchievements',
+                colors: {
+                    primary: '#ffd700',
+                    secondary: '#7209b7',
+                    background: '#0f0a1e',
+                    panel: '#1e1333',
+                    text: '#f6e8ff',
+                    border: '#b5179e',
+                    success: '#06ffa5',
+                    danger: '#d00000',
+                    warning: '#ffba08',
+                    gold: '#ffea00'
+                }
+            }
+        };
     }
     
     updateSpeedButton() {
@@ -3108,6 +3350,81 @@ class TowerDefenseGame {
         this.updateGemShopPanel();
         this.showMessage('Permanent Upgrade Purchased! ✓', '#00ff00');
         this.playSound('powerUp');
+    }
+    
+    openThemesPanel() {
+        document.getElementById('themesBackdrop').classList.add('active');
+        document.getElementById('themesPanel').classList.add('active');
+        this.updateThemesPanel();
+    }
+    
+    closeThemesPanel() {
+        document.getElementById('themesBackdrop').classList.remove('active');
+        document.getElementById('themesPanel').classList.remove('active');
+    }
+    
+    updateThemesPanel() {
+        document.getElementById('themesGemsAmount').textContent = this.permStats.gems;
+        
+        const themesGrid = document.getElementById('themesGrid');
+        themesGrid.innerHTML = '';
+        
+        const themes = this.getThemes();
+        const unlockedThemes = this.permStats.themes.unlocked;
+        const currentTheme = this.permStats.themes.current;
+        
+        Object.entries(themes).forEach(([key, theme]) => {
+            const isUnlocked = unlockedThemes.includes(key);
+            const isCurrent = currentTheme === key;
+            const canUnlock = this.checkThemeUnlock(key);
+            
+            const themeCard = document.createElement('div');
+            themeCard.className = 'theme-card';
+            if (isCurrent) themeCard.classList.add('current');
+            if (!isUnlocked) themeCard.classList.add('locked');
+            
+            // Get requirement text
+            let requirementText = '';
+            if (!isUnlocked && theme.requirement) {
+                const achievement = this.achievements.find(a => a.id === theme.requirement);
+                requirementText = achievement ? `<div class="theme-requirement ${canUnlock ? 'met' : 'unmet'}">
+                    ${canUnlock ? '✓' : '🔒'} ${achievement.name}
+                </div>` : '';
+            }
+            
+            themeCard.innerHTML = `
+                <div class="theme-preview" style="background: ${theme.colors.background}; border-color: ${theme.colors.primary};">
+                    <div class="theme-colors">
+                        <span style="background: ${theme.colors.primary};"></span>
+                        <span style="background: ${theme.colors.secondary};"></span>
+                        <span style="background: ${theme.colors.success};"></span>
+                    </div>
+                </div>
+                <div class="theme-name">${theme.name}</div>
+                <div class="theme-desc">${theme.description}</div>
+                ${requirementText}
+                ${isCurrent ? '<div class="theme-current">✓ ACTIVE</div>' : ''}
+                ${!isUnlocked ? `<div class="theme-cost">💎 ${theme.cost} gems</div>` : ''}
+                ${isUnlocked && !isCurrent ? '<button class="theme-apply-btn">APPLY</button>' : ''}
+                ${!isUnlocked && canUnlock ? '<button class="theme-unlock-btn">UNLOCK</button>' : ''}
+            `;
+            
+            // Add click handlers
+            if (isUnlocked && !isCurrent) {
+                themeCard.querySelector('.theme-apply-btn').addEventListener('click', () => {
+                    this.applyTheme(key);
+                    this.updateThemesPanel();
+                });
+            }
+            
+            if (!isUnlocked && canUnlock) {
+                themeCard.querySelector('.theme-unlock-btn').addEventListener('click', () => {
+                    this.unlockTheme(key);
+                });
+            }
+            
+            themesGrid.appendChild(themeCard);
+        });
     }
     
     openStatsPanel() {

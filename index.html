@@ -127,6 +127,7 @@
                     <button class="menu-btn" id="loadGameBtn">LOAD GAME</button>
                     <button class="menu-btn" id="settingsBtn">⚙️ SETTINGS</button>
                     <button class="menu-btn gem-shop-btn" id="gemShopBtn">💎 SHOP & UPGRADES</button>
+                    <button class="menu-btn" id="themesBtn">🎨 THEMES</button>
                     <button class="menu-btn" id="statsBtn">STATISTICS</button>
                     <button class="menu-btn" id="achievementsBtn">ACHIEVEMENTS</button>
                     <button class="menu-btn" id="enemyTypesBtn">ENEMY TYPES</button>
@@ -363,6 +364,22 @@
                     <div class="shop-level">Owned: <span id="permBonusGoldLevel">+0</span></div>
                     <div class="shop-cost kill-cost">💀 <span id="permGoldCost">150</span> kills</div>
                 </button>
+            </div>
+        </div>
+
+        <!-- Themes Panel -->
+        <div class="panel-backdrop" id="themesBackdrop"></div>
+        <div class="themes-panel" id="themesPanel">
+            <h2>🎨 THEMES</h2>
+            <div class="upgrade-close" id="closeThemes">✕</div>
+            
+            <div class="themes-info">
+                <p>Customize your game's look!</p>
+                <p>💎 Your Gems: <span id="themesGemsAmount">0</span></p>
+            </div>
+            
+            <div class="themes-grid" id="themesGrid">
+                <!-- Themes will be dynamically generated here -->
             </div>
         </div>
 
