@@ -1725,6 +1725,12 @@ class TowerDefenseGame {
         if (playerNameElement) {
             playerNameElement.textContent = `Player: ${playerName}`;
         }
+        
+        // Update gems display
+        const gemsElement = document.getElementById('gemsAmount');
+        if (gemsElement && this.permStats) {
+            gemsElement.textContent = this.permStats.gems || 0;
+        }
     }
     
     showMessage(text, color) {
@@ -2292,6 +2298,7 @@ class TowerDefenseGame {
                 bonusHealth: 0,
                 bonusClickDamage: 0,
                 bonusStartGold: 0,
+                gems: 0, // Premium currency
                 // Lifetime stats
                 totalDamageDealt: 0,
                 totalClicks: 0,
@@ -2310,6 +2317,11 @@ class TowerDefenseGame {
                     boss: 0
                 }
             };
+        }
+        
+        // Add gems if not present (backward compatibility)
+        if (this.permStats.gems === undefined) {
+            this.permStats.gems = 0;
         }
         
         // NOTE: Don't call applyPermanentBonuses here - tower doesn't exist yet!
@@ -2563,32 +2575,48 @@ class TowerDefenseGame {
             this.achievements = JSON.parse(saved);
         } else {
             this.achievements = [
-                { id: 'kills_10', name: 'First Blood', desc: 'Kill 10 zombies', icon: '🩸', unlocked: false, requirement: 10, stat: 'totalKills' },
-                { id: 'kills_100', name: 'Zombie Slayer', desc: 'Kill 100 zombies', icon: '⚔️', unlocked: false, requirement: 100, stat: 'totalKills' },
-                { id: 'kills_500', name: 'Zombie Hunter', desc: 'Kill 500 zombies', icon: '🏹', unlocked: false, requirement: 500, stat: 'totalKills' },
-                { id: 'kills_1000', name: 'Zombie Destroyer', desc: 'Kill 1000 zombies', icon: '💀', unlocked: false, requirement: 1000, stat: 'totalKills' },
+                { id: 'kills_10', name: 'First Blood', desc: 'Kill 10 zombies', icon: '🩸', unlocked: false, requirement: 10, stat: 'totalKills', gemReward: 5 },
+                { id: 'kills_100', name: 'Zombie Slayer', desc: 'Kill 100 zombies', icon: '⚔️', unlocked: false, requirement: 100, stat: 'totalKills', gemReward: 10 },
+                { id: 'kills_500', name: 'Zombie Hunter', desc: 'Kill 500 zombies', icon: '🏹', unlocked: false, requirement: 500, stat: 'totalKills', gemReward: 25 },
+                { id: 'kills_1000', name: 'Zombie Destroyer', desc: 'Kill 1000 zombies', icon: '💀', unlocked: false, requirement: 1000, stat: 'totalKills', gemReward: 50 },
                 
-                { id: 'wave_5', name: 'Getting Started', desc: 'Reach wave 5', icon: '🌊', unlocked: false, requirement: 5, stat: 'highestWave' },
-                { id: 'wave_10', name: 'Wave Master', desc: 'Reach wave 10', icon: '🌀', unlocked: false, requirement: 10, stat: 'highestWave' },
-                { id: 'wave_20', name: 'Wave Legend', desc: 'Reach wave 20', icon: '🌪️', unlocked: false, requirement: 20, stat: 'highestWave' },
-                { id: 'wave_30', name: 'Wave God', desc: 'Reach wave 30', icon: '⚡', unlocked: false, requirement: 30, stat: 'highestWave' },
+                { id: 'wave_5', name: 'Getting Started', desc: 'Reach wave 5', icon: '🌊', unlocked: false, requirement: 5, stat: 'highestWave', gemReward: 5 },
+                { id: 'wave_10', name: 'Wave Master', desc: 'Reach wave 10', icon: '🌀', unlocked: false, requirement: 10, stat: 'highestWave', gemReward: 15 },
+                { id: 'wave_20', name: 'Wave Legend', desc: 'Reach wave 20', icon: '🌪️', unlocked: false, requirement: 20, stat: 'highestWave', gemReward: 30 },
+                { id: 'wave_30', name: 'Wave God', desc: 'Reach wave 30', icon: '⚡', unlocked: false, requirement: 30, stat: 'highestWave', gemReward: 75 },
                 
-                { id: 'damage_10000', name: 'Power Striker', desc: 'Deal 10,000 damage', icon: '💥', unlocked: false, requirement: 10000, stat: 'totalDamageDealt' },
-                { id: 'damage_100000', name: 'Damage Dealer', desc: 'Deal 100,000 damage', icon: '💣', unlocked: false, requirement: 100000, stat: 'totalDamageDealt' },
+                { id: 'damage_10000', name: 'Power Striker', desc: 'Deal 10,000 damage', icon: '💥', unlocked: false, requirement: 10000, stat: 'totalDamageDealt', gemReward: 10 },
+                { id: 'damage_100000', name: 'Damage Dealer', desc: 'Deal 100,000 damage', icon: '💣', unlocked: false, requirement: 100000, stat: 'totalDamageDealt', gemReward: 40 },
                 
-                { id: 'clicks_500', name: 'Click Happy', desc: 'Click 500 times', icon: '👆', unlocked: false, requirement: 500, stat: 'totalClicks' },
-                { id: 'clicks_5000', name: 'Click Master', desc: 'Click 5000 times', icon: '🖱️', unlocked: false, requirement: 5000, stat: 'totalClicks' },
+                { id: 'clicks_500', name: 'Click Happy', desc: 'Click 500 times', icon: '👆', unlocked: false, requirement: 500, stat: 'totalClicks', gemReward: 10 },
+                { id: 'clicks_5000', name: 'Click Master', desc: 'Click 5000 times', icon: '🖱️', unlocked: false, requirement: 5000, stat: 'totalClicks', gemReward: 35 },
                 
-                { id: 'boss_1', name: 'Boss Buster', desc: 'Kill your first boss', icon: '👑', unlocked: false, requirement: 1, stat: 'bossesKilled' },
-                { id: 'boss_10', name: 'Boss Hunter', desc: 'Kill 10 bosses', icon: '🏆', unlocked: false, requirement: 10, stat: 'bossesKilled' },
+                { id: 'boss_1', name: 'Boss Buster', desc: 'Kill your first boss', icon: '👑', unlocked: false, requirement: 1, stat: 'bossesKilled', gemReward: 20 },
+                { id: 'boss_10', name: 'Boss Hunter', desc: 'Kill 10 bosses', icon: '🏆', unlocked: false, requirement: 10, stat: 'bossesKilled', gemReward: 50 },
                 
-                { id: 'gold_5000', name: 'Gold Collector', desc: 'Earn 5000 gold', icon: '💰', unlocked: false, requirement: 5000, stat: 'totalGoldEarned' },
-                { id: 'gold_50000', name: 'Gold Tycoon', desc: 'Earn 50,000 gold', icon: '💎', unlocked: false, requirement: 50000, stat: 'totalGoldEarned' },
+                { id: 'gold_5000', name: 'Gold Collector', desc: 'Earn 5000 gold', icon: '💰', unlocked: false, requirement: 5000, stat: 'totalGoldEarned', gemReward: 15 },
+                { id: 'gold_50000', name: 'Gold Tycoon', desc: 'Earn 50,000 gold', icon: '💎', unlocked: false, requirement: 50000, stat: 'totalGoldEarned', gemReward: 45 },
                 
-                { id: 'games_10', name: 'Dedicated', desc: 'Play 10 games', icon: '🎮', unlocked: false, requirement: 10, stat: 'totalGamesPlayed' },
-                { id: 'games_50', name: 'Persistent', desc: 'Play 50 games', icon: '🕹️', unlocked: false, requirement: 50, stat: 'totalGamesPlayed' }
+                { id: 'games_10', name: 'Dedicated', desc: 'Play 10 games', icon: '🎮', unlocked: false, requirement: 10, stat: 'totalGamesPlayed', gemReward: 10 },
+                { id: 'games_50', name: 'Persistent', desc: 'Play 50 games', icon: '🕹️', unlocked: false, requirement: 50, stat: 'totalGamesPlayed', gemReward: 40 }
             ];
         }
+        
+        // Add gem rewards to existing achievements if missing (backward compatibility)
+        const gemRewards = {
+            'kills_10': 5, 'kills_100': 10, 'kills_500': 25, 'kills_1000': 50,
+            'wave_5': 5, 'wave_10': 15, 'wave_20': 30, 'wave_30': 75,
+            'damage_10000': 10, 'damage_100000': 40,
+            'clicks_500': 10, 'clicks_5000': 35,
+            'boss_1': 20, 'boss_10': 50,
+            'gold_5000': 15, 'gold_50000': 45,
+            'games_10': 10, 'games_50': 40
+        };
+        this.achievements.forEach(ach => {
+            if (ach.gemReward === undefined && gemRewards[ach.id]) {
+                ach.gemReward = gemRewards[ach.id];
+            }
+        });
     }
     
     saveAchievements() {
@@ -2598,6 +2626,7 @@ class TowerDefenseGame {
     
     checkAchievements() {
         let newUnlocks = 0;
+        let totalGemsEarned = 0;
         
         this.achievements.forEach(achievement => {
             if (!achievement.unlocked) {
@@ -2605,6 +2634,12 @@ class TowerDefenseGame {
                 if (statValue >= achievement.requirement) {
                     achievement.unlocked = true;
                     newUnlocks++;
+                    
+                    // Award gems for achievement
+                    const gemReward = achievement.gemReward || 0;
+                    this.permStats.gems += gemReward;
+                    totalGemsEarned += gemReward;
+                    
                     this.showAchievementUnlock(achievement);
                 }
             }
@@ -2612,6 +2647,14 @@ class TowerDefenseGame {
         
         if (newUnlocks > 0) {
             this.saveAchievements();
+            this.savePermanentStats();
+            
+            // Show gems earned message
+            if (totalGemsEarned > 0) {
+                setTimeout(() => {
+                    this.showMessage(`+${totalGemsEarned} Gems Earned! 💎`, '#ff00ff');
+                }, 2000);
+            }
         }
     }
     
@@ -2622,6 +2665,7 @@ class TowerDefenseGame {
         // Show narration
         this.showNarration('🏆 ACHIEVEMENT UNLOCKED! 🏆', 3000);
         
+        const gemReward = achievement.gemReward || 0;
         const popup = document.createElement('div');
         popup.className = 'achievement-popup';
         popup.innerHTML = `
@@ -2630,6 +2674,7 @@ class TowerDefenseGame {
                 <div class="achievement-title">Achievement Unlocked!</div>
                 <div class="achievement-name">${achievement.name}</div>
                 <div class="achievement-desc">${achievement.desc}</div>
+                ${gemReward > 0 ? `<div class="achievement-reward">+${gemReward} Gems 💎</div>` : ''}
             </div>
         `;
         document.body.appendChild(popup);
@@ -2935,6 +2980,7 @@ class TowerDefenseGame {
             const progress = this.permStats[achievement.stat] || 0;
             const percentage = Math.min(100, Math.floor((progress / achievement.requirement) * 100));
             
+            const gemReward = achievement.gemReward || 0;
             achievementEl.innerHTML = `
                 <div class="achievement-icon-large">${achievement.unlocked ? achievement.icon : '🔒'}</div>
                 <div class="achievement-content">
@@ -2943,6 +2989,7 @@ class TowerDefenseGame {
                         ${achievement.unlocked ? '<span class="achievement-unlocked-badge">✓</span>' : ''}
                     </div>
                     <div class="achievement-desc">${achievement.desc}</div>
+                    ${gemReward > 0 ? `<div class="achievement-gem-reward">💎 Reward: ${gemReward} Gems</div>` : ''}
                     <div class="achievement-progress-bar">
                         <div class="achievement-progress-fill" style="width: ${percentage}%"></div>
                     </div>

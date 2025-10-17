@@ -1316,6 +1316,18 @@ body {
     margin-bottom: 10px;
 }
 
+.achievement-gem-reward {
+    color: #ff00ff;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 5px;
+    padding: 4px 8px;
+    background: rgba(255, 0, 255, 0.1);
+    border-radius: 5px;
+    display: inline-block;
+    text-shadow: 0 0 5px rgba(255, 0, 255, 0.8);
+}
+
 .achievement-progress-bar {
     width: 100%;
     height: 8px;
@@ -2153,6 +2165,61 @@ body {
     font-weight: bold;
     margin-bottom: 15px;
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Gems Display */
+.gems-display {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(75, 0, 130, 0.3));
+    border: 2px solid #ff00ff;
+    border-radius: 25px;
+    padding: 10px 20px;
+    margin: 15px auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+    animation: gemGlow 2s ease-in-out infinite;
+}
+
+.gems-icon {
+    font-size: 24px;
+    filter: drop-shadow(0 0 5px rgba(255, 0, 255, 0.8));
+}
+
+.gems-amount {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff00ff;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+    min-width: 40px;
+    text-align: center;
+}
+
+.gems-label {
+    font-size: 16px;
+    color: #ff99ff;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+}
+
+@keyframes gemGlow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(255, 0, 255, 0.7);
+    }
+}
+
+/* Achievement Reward Display */
+.achievement-reward {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 255, 255, 0.3);
+    font-size: 16px;
+    font-weight: bold;
+    color: #ff00ff;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
 }
 
 /* Mobile Responsive */
