@@ -3883,6 +3883,16 @@ class TowerDefenseGame {
             bonusHealth: 0,
             bonusClickDamage: 0,
             bonusStartGold: 0,
+            gems: 0, // Premium currency
+            // Gem shop upgrades
+            gemUpgrades: {
+                damageMultiplier: 0,
+                healthMultiplier: 0,
+                goldMultiplier: 0,
+                xpMultiplier: 0,
+                critChance: 0,
+                healthRegen: 0
+            },
             totalDamageDealt: 0,
             totalClicks: 0,
             highestWave: 0,
@@ -3895,13 +3905,31 @@ class TowerDefenseGame {
                 runner: 0,
                 tank: 0,
                 exploder: 0,
+                spawner: 0,
                 boss: 0
+            },
+            // Daily rewards
+            dailyRewards: {
+                lastLogin: null,
+                streak: 0,
+                claimed: []
+            },
+            // Themes
+            themes: {
+                unlocked: ['classic'], // Classic is always unlocked
+                current: 'classic'
             }
         };
         this.savePermanentStats();
         
+        // Initialize achievements for new player
+        this.loadAchievements();
+        
         // Re-apply bonuses (which will be zero for new player)
         this.applyPermanentBonuses();
+        
+        // Apply the default theme
+        this.applyTheme('classic');
         
         // Hide name input, show main menu
         document.getElementById('nameInputScreen').classList.remove('active');
