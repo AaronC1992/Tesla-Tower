@@ -626,6 +626,9 @@ class TowerDefenseGame {
         });
         
         // Cheat key for testing: Press '=' to get 500 gems
+        // Initialize voice test index
+        this.voiceTestIndex = 0;
+        
         document.addEventListener('keydown', (e) => {
             if (e.key === '=') {
                 this.permStats.gems += 500;
@@ -635,12 +638,32 @@ class TowerDefenseGame {
                 this.playSound('achievement');
                 console.log('Cheat activated: +500 gems');
             }
-            // Test voice with 'V' key
+            // Test voice with 'V' key - cycle through all announcements
             if (e.key === 'v' || e.key === 'V') {
-                console.log('Voice test triggered');
-                this.speak('Voice test. Tower Defense Game. Critical Health Warning!', { rate: 1.0, pitch: 1.0, volume: 1.0 });
+                this.testVoiceAnnouncements();
             }
         });
+    }
+    
+    testVoiceAnnouncements() {
+        const announcements = [
+            { text: '⚡ Wave 5 Incoming! ⚡', type: 'wave', description: 'Wave Announcement' },
+            { text: '⚡ Wave 10 Incoming! ⚡', type: 'wave', description: 'Wave 10 Milestone' },
+            { text: '💀 BOSS APPROACHING! 💀', type: 'boss', description: 'Boss Warning' },
+            { text: '⚠️ TOWER CRITICAL! ⚠️', type: 'critical', description: 'Critical Health Warning' },
+            { text: '🏆 ACHIEVEMENT UNLOCKED! 🏆', type: 'achievement', description: 'Achievement Unlock' },
+            { text: '✓ Settings Applied!', type: 'normal', description: 'Settings Confirmation' }
+        ];
+        
+        const current = announcements[this.voiceTestIndex];
+        console.log(`🗣️ Voice Test ${this.voiceTestIndex + 1}/${announcements.length}: ${current.description}`);
+        this.showMessage(`Voice Test: ${current.description}`, '#00ffff');
+        
+        // Use the showNarration function to get the proper voice settings
+        this.showNarration(current.text, 2500);
+        
+        // Move to next announcement
+        this.voiceTestIndex = (this.voiceTestIndex + 1) % announcements.length;
     }
     
     startGame() {
