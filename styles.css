@@ -119,6 +119,46 @@ body {
     transform: scale(0.95);
 }
 
+/* Narration Display */
+.narration-display {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(26, 26, 46, 0.95));
+    border: 3px solid #00ffff;
+    border-radius: 15px;
+    padding: 25px 40px;
+    font-size: 32px;
+    font-weight: bold;
+    color: #00ffff;
+    text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.6), inset 0 0 30px rgba(0, 255, 255, 0.1);
+    z-index: 5000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    text-align: center;
+    min-width: 300px;
+}
+
+.narration-display.show {
+    opacity: 1;
+    animation: narrationPulse 0.5s ease;
+}
+
+@keyframes narrationPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
 /* Upgrade Button */
 .upgrade-btn {
     position: absolute;

@@ -115,6 +115,10 @@ class TowerDefenseGame {
         this.zombiesSpawned = 0;
         this.bossSpawned = false; // Track if boss spawned this wave
         
+        // Narration tracking
+        this.criticalHealthWarned = false;
+        this.narrationTimeout = null;
+        
         this.init();
     }
     
@@ -492,6 +496,7 @@ class TowerDefenseGame {
         this.isPaused = false; // Reset pause flag
         this.lastSpawn = performance.now(); // Initialize spawn timer
         this.runStartTime = Date.now(); // Start run timer
+        this.criticalHealthWarned = false; // Reset health warning
         
         // Show daily challenges
         console.log('=== DAILY CHALLENGES ===');
@@ -891,6 +896,7 @@ class TowerDefenseGame {
             this.bossSpawned = true;
             this.playSound('boss');
             this.showMessage('💀 BOSS ZOMBIE INCOMING! 💀', '#ff0000');
+            this.showNarration('💀 BOSS APPROACHING! 💀', 3000);
         } else {
             // Determine zombie type based on wave and random chance
             const rand = Math.random();
@@ -1068,6 +1074,13 @@ class TowerDefenseGame {
                         this.challengeTracking.damageTaken += zombieDamage;
                         // Create red damage particle effect
                         this.createParticles(zombie.x, zombie.y, '#ff0000', 3);
+                        
+                        // Check for critical health warning
+                        const healthPercent = this.tower.health / this.tower.maxHealth;
+                        if (healthPercent <= 0.25 && !this.criticalHealthWarned) {
+                            this.showNarration('⚠️ TOWER CRITICAL! ⚠️', 3000);
+                            this.criticalHealthWarned = true;
+                        }
                     }
                     zombie.lastDamageTime = currentTime;
                     
@@ -1621,6 +1634,28 @@ class TowerDefenseGame {
         console.log(text);
     }
     
+    showNarration(text, duration = 2500) {
+        const narrationEl = document.getElementById('narrationDisplay');
+        if (!narrationEl) return;
+        
+        // Clear any existing timeout
+        if (this.narrationTimeout) {
+            clearTimeout(this.narrationTimeout);
+        }
+        
+        // Set text and show
+        narrationEl.textContent = text;
+        narrationEl.classList.add('show');
+        
+        // Play sound effect
+        this.playSound('powerUp');
+        
+        // Hide after duration
+        this.narrationTimeout = setTimeout(() => {
+            narrationEl.classList.remove('show');
+        }, duration);
+    }
+    
     gameOver() {
         this.isGameOver = true;
         this.isPaused = true;
@@ -1756,6 +1791,11 @@ class TowerDefenseGame {
                     this.bossSpawned = false; // Reset boss flag for new wave
                     this.zombiesPerWave = Math.floor(5 + this.wave * 1.5);
                     this.spawnRate = Math.max(500, 2000 - (this.wave * 50)); // Spawn faster
+                    
+                    // Narration for milestone waves
+                    if (this.wave % 5 === 0) {
+                        this.showNarration(`⚡ Wave ${this.wave} Incoming! ⚡`, 2000);
+                    }
                 }
             }
             
@@ -2272,6 +2312,9 @@ class TowerDefenseGame {
     showAchievementUnlock(achievement) {
         // Play achievement sound
         this.playSound('achievement');
+        
+        // Show narration
+        this.showNarration('🏆 ACHIEVEMENT UNLOCKED! 🏆', 3000);
         
         const popup = document.createElement('div');
         popup.className = 'achievement-popup';
