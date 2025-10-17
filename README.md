@@ -4,7 +4,7 @@ A browser-based tower defense game where you defend your Tesla Tower from endles
 
 ## 🎮 Play Now
 
-[Play the game here!](#) (Link will be updated after deployment)
+[Play the game here!](https://aaronc1992.github.io/Tesla-Tower/)
 
 ## 🌟 Features
 
@@ -43,3 +43,5 @@ Simply open `index.html` in a modern web browser to start playing!
 ## 📄 License
 
 Free to play and enjoy!
+
+
