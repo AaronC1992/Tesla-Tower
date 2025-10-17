@@ -322,6 +322,11 @@ class TowerDefenseGame {
             this.buyGemUpgrade('healthRegen', 80);
         });
         
+        // Daily reward claim button
+        document.getElementById('claimRewardBtn').addEventListener('click', () => {
+            this.claimDailyReward();
+        });
+        
         // Achievements button
         document.getElementById('achievementsBtn').addEventListener('click', () => {
             console.log('Achievements button clicked!');
@@ -2406,6 +2411,18 @@ class TowerDefenseGame {
             };
         }
         
+        // Add daily rewards if not present (backward compatibility)
+        if (!this.permStats.dailyRewards) {
+            this.permStats.dailyRewards = {
+                lastLogin: null,
+                streak: 0,
+                claimed: []
+            };
+        }
+        
+        // Check for daily reward
+        this.checkDailyReward();
+        
         // NOTE: Don't call applyPermanentBonuses here - tower doesn't exist yet!
         // It will be called from init() after everything is set up
         
@@ -2420,6 +2437,100 @@ class TowerDefenseGame {
         
         // Initialize sound system
         this.initSounds();
+    }
+    
+    checkDailyReward() {
+        const today = new Date().toDateString();
+        const lastLogin = this.permStats.dailyRewards.lastLogin;
+        
+        // If last login was not today, show reward
+        if (lastLogin !== today) {
+            // Calculate streak
+            if (lastLogin) {
+                const lastDate = new Date(lastLogin);
+                const todayDate = new Date(today);
+                const diffTime = todayDate - lastDate;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 1) {
+                    // Consecutive day - increase streak
+                    this.permStats.dailyRewards.streak++;
+                } else if (diffDays > 1) {
+                    // Streak broken - reset
+                    this.permStats.dailyRewards.streak = 1;
+                }
+            } else {
+                // First time login
+                this.permStats.dailyRewards.streak = 1;
+            }
+            
+            // Show reward popup after a delay
+            setTimeout(() => {
+                this.showDailyRewardPopup();
+            }, 1500);
+        }
+    }
+    
+    showDailyRewardPopup() {
+        const streak = this.permStats.dailyRewards.streak;
+        const rewards = this.calculateDailyReward(streak);
+        
+        const popup = document.getElementById('dailyRewardPopup');
+        const info = document.getElementById('dailyRewardInfo');
+        
+        info.innerHTML = `
+            <p class="streak-info">🔥 Login Streak: Day ${streak}</p>
+            <p>You've earned:</p>
+            <p class="reward-highlight">💎 +${rewards.gems} Gems</p>
+            <p class="reward-highlight">💀 +${rewards.kills} Kills</p>
+            ${streak % 7 === 0 ? '<p style="color: #ff00ff;">🎉 Weekly Bonus!</p>' : ''}
+        `;
+        
+        popup.classList.add('show');
+    }
+    
+    calculateDailyReward(streak) {
+        // Base rewards
+        let gems = 5;
+        let kills = 50;
+        
+        // Bonus for streak
+        const streakBonus = Math.floor(streak / 3); // Bonus every 3 days
+        gems += streakBonus * 2;
+        kills += streakBonus * 25;
+        
+        // Weekly bonus (day 7, 14, 21, etc.)
+        if (streak % 7 === 0) {
+            gems += 15;
+            kills += 100;
+        }
+        
+        return { gems, kills };
+    }
+    
+    claimDailyReward() {
+        const streak = this.permStats.dailyRewards.streak;
+        const rewards = this.calculateDailyReward(streak);
+        
+        // Add rewards
+        this.permStats.gems += rewards.gems;
+        this.permStats.totalKills += rewards.kills;
+        
+        // Update last login
+        this.permStats.dailyRewards.lastLogin = new Date().toDateString();
+        
+        // Save
+        this.savePermanentStats();
+        
+        // Hide popup
+        document.getElementById('dailyRewardPopup').classList.remove('show');
+        
+        // Show confirmation
+        this.showMessage(`Daily Reward Claimed! 💎 +${rewards.gems} Gems, 💀 +${rewards.kills} Kills`, '#ffd700');
+        this.playSound('achievement');
+        
+        // Update UI
+        this.updateUI();
     }
     
     applyPermanentBonuses() {

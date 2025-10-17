@@ -2374,6 +2374,116 @@ body {
     text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
 }
 
+/* Daily Reward Popup */
+.daily-reward-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10003;
+    animation: fadeIn 0.3s ease;
+}
+
+.daily-reward-popup.show {
+    display: flex;
+}
+
+.daily-reward-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid #ffd700;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+    animation: popIn 0.5s ease;
+    max-width: 400px;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.daily-reward-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.daily-reward-content h2 {
+    color: #ffd700;
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+.daily-reward-info {
+    color: white;
+    font-size: 18px;
+    margin: 20px 0;
+    line-height: 1.8;
+}
+
+.daily-reward-info p {
+    margin: 10px 0;
+}
+
+.reward-highlight {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 24px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+}
+
+.streak-info {
+    color: #ffaa00;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+.claim-reward-btn {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+    border: none;
+    padding: 15px 40px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.claim-reward-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+}
+
+.claim-reward-btn:active {
+    transform: scale(0.98);
+}
+
 /* Mobile Responsive */
 @media (max-width: 600px) {
     .title-logo {
