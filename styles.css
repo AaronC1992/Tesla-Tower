@@ -159,6 +159,61 @@ body {
     }
 }
 
+/* Tooltip Display */
+.tooltip-display {
+    position: fixed;
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.98), rgba(20, 20, 40, 0.98));
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 4px 15px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 10002;
+    max-width: 300px;
+    font-size: 14px;
+}
+
+.tooltip-display.show {
+    opacity: 1;
+}
+
+.tooltip-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #00ffff;
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.tooltip-content {
+    line-height: 1.6;
+}
+
+.tooltip-content p {
+    margin: 5px 0;
+}
+
+.tooltip-current {
+    color: #ffff00;
+    font-weight: bold;
+}
+
+.tooltip-upgrade {
+    color: #00ff00;
+    font-weight: bold;
+}
+
+.tooltip-effect {
+    color: #ff66ff;
+    font-style: italic;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 255, 255, 0.3);
+}
+
 /* Upgrade Button */
 .upgrade-btn {
     position: absolute;

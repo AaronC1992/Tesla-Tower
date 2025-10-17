@@ -266,6 +266,24 @@ class TowerDefenseGame {
             this.buyPermUpgrade('gold');
         });
         
+        // Tooltip event listeners for permanent upgrades
+        const permUpgradeButtons = [
+            { id: 'buyPermDamage', type: 'permDamage' },
+            { id: 'buyPermHealth', type: 'permHealth' },
+            { id: 'buyPermClick', type: 'permClick' },
+            { id: 'buyPermGold', type: 'permGold' }
+        ];
+        
+        permUpgradeButtons.forEach(btn => {
+            const element = document.getElementById(btn.id);
+            element.addEventListener('mouseenter', () => {
+                this.showTooltip(element, btn.type, true);
+            });
+            element.addEventListener('mouseleave', () => {
+                this.hideTooltip();
+            });
+        });
+        
         // Stats button
         document.getElementById('statsBtn').addEventListener('click', () => {
             this.openStatsPanel();
@@ -404,6 +422,28 @@ class TowerDefenseGame {
         
         document.getElementById('upgradeShield').addEventListener('click', () => {
             this.buyUpgrade('shield');
+        });
+        
+        // Tooltip event listeners for in-game upgrades
+        const upgradeButtons = [
+            { id: 'upgradeDamage', type: 'damage' },
+            { id: 'upgradeRange', type: 'range' },
+            { id: 'upgradeFireRate', type: 'fireRate' },
+            { id: 'upgradeHealth', type: 'health' },
+            { id: 'upgradeTargets', type: 'targets' },
+            { id: 'upgradeClickDamage', type: 'clickDamage' },
+            { id: 'upgradeChainLightning', type: 'chainLightning' },
+            { id: 'upgradeShield', type: 'shield' }
+        ];
+        
+        upgradeButtons.forEach(btn => {
+            const element = document.getElementById(btn.id);
+            element.addEventListener('mouseenter', () => {
+                this.showTooltip(element, btn.type, false);
+            });
+            element.addEventListener('mouseleave', () => {
+                this.hideTooltip();
+            });
         });
         
         // Canvas mouse events for shooting
@@ -1694,6 +1734,162 @@ class TowerDefenseGame {
         this.narrationTimeout = setTimeout(() => {
             narrationEl.classList.remove('show');
         }, duration);
+    }
+    
+    // Tooltip System
+    showTooltip(element, upgradeType, isPermanent = false) {
+        const tooltip = document.getElementById('tooltipDisplay');
+        const tooltipTitle = document.getElementById('tooltipTitle');
+        const tooltipContent = document.getElementById('tooltipContent');
+        
+        if (!tooltip || !tooltipTitle || !tooltipContent) return;
+        
+        // Get tooltip data
+        const data = this.getTooltipData(upgradeType, isPermanent);
+        if (!data) return;
+        
+        // Set tooltip content
+        tooltipTitle.textContent = data.title;
+        tooltipContent.innerHTML = data.content;
+        
+        // Position tooltip near the element
+        const rect = element.getBoundingClientRect();
+        const tooltipWidth = 300;
+        const tooltipHeight = 150;
+        
+        // Position to the right if there's space, otherwise to the left
+        let left = rect.right + 10;
+        if (left + tooltipWidth > window.innerWidth) {
+            left = rect.left - tooltipWidth - 10;
+        }
+        
+        // Center vertically relative to element
+        let top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+        if (top < 10) top = 10;
+        if (top + tooltipHeight > window.innerHeight) {
+            top = window.innerHeight - tooltipHeight - 10;
+        }
+        
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+        tooltip.classList.add('show');
+    }
+    
+    hideTooltip() {
+        const tooltip = document.getElementById('tooltipDisplay');
+        if (tooltip) {
+            tooltip.classList.remove('show');
+        }
+    }
+    
+    getTooltipData(upgradeType, isPermanent) {
+        if (isPermanent) {
+            // Permanent upgrade tooltips
+            const permData = {
+                permDamage: {
+                    title: '⚔️ Permanent Damage Bonus',
+                    content: `
+                        <p><span class="tooltip-current">Current Bonus:</span> +${this.permUpgrades.damage * 2} damage</p>
+                        <p><span class="tooltip-upgrade">Next Level:</span> +${(this.permUpgrades.damage + 1) * 2} damage</p>
+                        <p class="tooltip-effect">💡 Every point increases your tower's base damage for all future games</p>
+                    `
+                },
+                permHealth: {
+                    title: '❤️ Permanent Health Bonus',
+                    content: `
+                        <p><span class="tooltip-current">Current Bonus:</span> +${this.permUpgrades.health * 20} max HP</p>
+                        <p><span class="tooltip-upgrade">Next Level:</span> +${(this.permUpgrades.health + 1) * 20} max HP</p>
+                        <p class="tooltip-effect">💡 Start every game with more health to survive longer</p>
+                    `
+                },
+                permClick: {
+                    title: '👆 Permanent Click Power',
+                    content: `
+                        <p><span class="tooltip-current">Current Bonus:</span> +${this.permUpgrades.clickDamage} click damage</p>
+                        <p><span class="tooltip-upgrade">Next Level:</span> +${this.permUpgrades.clickDamage + 1} click damage</p>
+                        <p class="tooltip-effect">💡 Your clicks/taps will deal more damage to zombies</p>
+                    `
+                },
+                permGold: {
+                    title: '💰 Permanent Starting Gold',
+                    content: `
+                        <p><span class="tooltip-current">Current Bonus:</span> +${this.permUpgrades.startingGold * 50} starting gold</p>
+                        <p><span class="tooltip-upgrade">Next Level:</span> +${(this.permUpgrades.startingGold + 1) * 50} starting gold</p>
+                        <p class="tooltip-effect">💡 Begin each game with extra gold for early upgrades</p>
+                    `
+                }
+            };
+            return permData[upgradeType];
+        } else {
+            // In-game upgrade tooltips
+            const gameData = {
+                damage: {
+                    title: '💥 Increase Damage',
+                    content: `
+                        <p><span class="tooltip-current">Current Damage:</span> ${this.tower.damage}</p>
+                        <p><span class="tooltip-upgrade">After Upgrade:</span> ${this.tower.damage + 5}</p>
+                        <p class="tooltip-effect">💡 Higher damage kills zombies faster and helps against tougher enemies</p>
+                    `
+                },
+                range: {
+                    title: '📡 Increase Range',
+                    content: `
+                        <p><span class="tooltip-current">Current Range:</span> ${this.tower.range.toFixed(0)}</p>
+                        <p><span class="tooltip-upgrade">After Upgrade:</span> ${(this.tower.range + 30).toFixed(0)}</p>
+                        <p class="tooltip-effect">💡 Larger range lets you attack enemies earlier, giving more time to defeat them</p>
+                    `
+                },
+                fireRate: {
+                    title: '⚡ Faster Fire Rate',
+                    content: `
+                        <p><span class="tooltip-current">Current Speed:</span> ${this.tower.fireRate.toFixed(2)}s per attack</p>
+                        <p><span class="tooltip-upgrade">After Upgrade:</span> ${(this.tower.fireRate - 0.1).toFixed(2)}s per attack</p>
+                        <p class="tooltip-effect">💡 Attack more frequently to deal more DPS (damage per second)</p>
+                    `
+                },
+                health: {
+                    title: '❤️ Repair Tower',
+                    content: `
+                        <p><span class="tooltip-current">Current Health:</span> ${this.tower.health}/${this.tower.maxHealth}</p>
+                        <p><span class="tooltip-upgrade">After Repair:</span> ${Math.min(this.tower.health + 50, this.tower.maxHealth)}/${this.tower.maxHealth}</p>
+                        <p class="tooltip-effect">💡 Restore HP to survive longer. Max HP can't be exceeded</p>
+                    `
+                },
+                targets: {
+                    title: '🎯 Multi-Target',
+                    content: `
+                        <p><span class="tooltip-current">Current Targets:</span> ${this.tower.maxTargets}</p>
+                        <p><span class="tooltip-upgrade">After Upgrade:</span> ${this.tower.maxTargets + 1}</p>
+                        <p class="tooltip-effect">💡 Attack multiple zombies simultaneously for better crowd control</p>
+                    `
+                },
+                clickDamage: {
+                    title: '👆 Click Power',
+                    content: `
+                        <p><span class="tooltip-current">Current Click Damage:</span> ${this.clickDamage}</p>
+                        <p><span class="tooltip-upgrade">After Upgrade:</span> ${this.clickDamage + 2}</p>
+                        <p class="tooltip-effect">💡 Manually click/tap zombies to deal damage. Great for finishing off tough enemies</p>
+                    `
+                },
+                chainLightning: {
+                    title: '⚡🔗 Chain Lightning',
+                    content: `
+                        <p><span class="tooltip-current">Current Jumps:</span> ${this.tower.chainLightningJumps}</p>
+                        <p><span class="tooltip-upgrade">After Upgrade:</span> ${this.tower.chainLightningJumps + 1}</p>
+                        <p class="tooltip-effect">💡 Lightning bounces between enemies, dealing 50% damage per jump. Excellent for groups</p>
+                    `
+                },
+                shield: {
+                    title: '🛡️ Shield Generator',
+                    content: `
+                        <p><span class="tooltip-current">Current Shield:</span> ${this.tower.shield}/${this.tower.maxShield}</p>
+                        <p><span class="tooltip-upgrade">After Upgrade:</span> ${this.tower.maxShield + 5} max shield</p>
+                        <p class="tooltip-effect">💡 Shields absorb damage before health. Regenerates 1 point every 3 seconds</p>
+                    `
+                }
+            };
+            return gameData[upgradeType];
+        }
     }
     
     gameOver() {
