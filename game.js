@@ -618,6 +618,18 @@ class TowerDefenseGame {
         document.getElementById('deleteSlot3').addEventListener('click', () => {
             if (confirm('Delete save in Slot 3?')) this.deleteSave(3);
         });
+        
+        // Cheat key for testing: Press '=' to get 500 gems
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '=') {
+                this.permStats.gems += 500;
+                this.savePermanentStats();
+                this.updateUI();
+                this.showMessage('CHEAT: +500 Gems! 💎', '#ff00ff');
+                this.playSound('achievement');
+                console.log('Cheat activated: +500 gems');
+            }
+        });
     }
     
     startGame() {
